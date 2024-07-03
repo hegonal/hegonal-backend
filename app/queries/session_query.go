@@ -36,7 +36,6 @@ func (q *UserQueries) GetSession(userID, s string) (models.Session, error) {
 	return session, nil
 }
 
-
 func (q *SessionQueries) DeleteSession(userID string, session string) error {
 	query := `DELETE FROM sessions WHERE id = $1 AND session = $2`
 
@@ -74,7 +73,7 @@ func (q *SessionQueries) RotateSession(userID, oldSession string) (string, error
 		return "", err
 	}
 
-	if err = q.UpdateSession(userID, oldSession, newSession, time.Now().Add(24 * time.Hour)); err != nil {
+	if err = q.UpdateSession(userID, oldSession, newSession, time.Now().UTC().Add(24*time.Hour)); err != nil {
 		return "", err
 	}
 

@@ -6,7 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/hegonal/hegonal-backend/app/models"
-	"github.com/hegonal/hegonal-backend/app/queries"
 	"github.com/hegonal/hegonal-backend/pkg/utils"
 	"github.com/hegonal/hegonal-backend/platform/database"
 )
@@ -14,8 +13,7 @@ import (
 func TeamAdd(c *fiber.Ctx) error {
 	teamAdd := &models.TeamAdd{}
 
-	userSession := c.Cookies("session")
-	userId := c.Cookies("userID")
+	_ = c.Cookies("userID")
 
 	if err := c.BodyParser(teamAdd); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -33,46 +31,21 @@ func TeamAdd(c *fiber.Ctx) error {
 		})
 	}
 
-	db, err := database.OpenDBConnection()
-	if err != nil {
-		log.Error(err)
+	db, ok := c.Locals("db").(*database.Queries)
+	if !ok {
+		log.Error("Failed to retrieve DB from context")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
-			"msg":   err.Error(),
+			"msg":   "Failed to retrieve DB from context",
 		})
 	}
-
-	test := time.Now()
-	newSession, err := db.RotateSession(userId, userSession)
-	log.Info(time.Since(test))
-	if _, ok := err.(*queries.NoRowsAffectedError); ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": true,
-			"msg":   "Please relogin or try again later",
-		})
-	} else if err != nil {
-		log.Error(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": true,
-			"msg":   err.Error(),
-		})
-	}
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "session",
-		Value:    newSession,
-		Expires:  time.Now().Add(24 * time.Hour),
-		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Lax",
-	})
 
 	team := &models.Team{}
 	team.ID = utils.GenerateId()
 	team.Name = teamAdd.Name
 	team.Description = teamAdd.Description
-	team.CreatedAt = time.Now()
-	team.UpdatedAt = time.Now()
+	team.CreatedAt = time.Now().UTC()
+	team.UpdatedAt = time.Now().UTC()
 
 	if err := db.CreateNewTeam(team); err != nil {
 		log.Error(err)

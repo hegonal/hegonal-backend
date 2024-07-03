@@ -71,8 +71,8 @@ func UserSignUp(c *fiber.Ctx) error {
 	user.Name = signUp.Name
 	user.Password = utils.GeneratePassword(signUp.Password)
 	user.Email = signUp.Email
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
+	user.CreatedAt = time.Now().UTC()
+	user.UpdatedAt = time.Now().UTC()
 
 	if ownerAccountBeenCreated {
 		user.Role = models.HegonalUser
@@ -100,11 +100,11 @@ func UserSignUp(c *fiber.Ctx) error {
 	ua := useragent.Parse(c.Get("User-Agent"))
 
 	session.ID = user.ID
-	session.ExpiryTime = time.Now().Add(24 * time.Hour)
+	session.ExpiryTime = time.Now().UTC().Add(24 * time.Hour)
 	session.Ip = c.IP()
 	session.Device = c.Get(ua.OS + " " + ua.Name)
-	session.CreatedAt = time.Now()
-	session.UpdatedAt = time.Now()
+	session.CreatedAt = time.Now().UTC()
+	session.UpdatedAt = time.Now().UTC()
 	session.Session, err = utils.GenerateSessionString()
 
 	if err != nil {
@@ -126,7 +126,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "session",
 		Value:    session.Session,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().UTC().Add(24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
@@ -135,7 +135,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "userID",
 		Value:    user.ID,
-		Expires:  time.Now().Add(24 * time.Hour * 365),
+		Expires:  time.Now().UTC().Add(24 * time.Hour * 365),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
@@ -204,11 +204,11 @@ func UserLogin(c *fiber.Ctx) error {
 	ua := useragent.Parse(c.Get("User-Agent"))
 
 	session.ID = user.ID
-	session.ExpiryTime = time.Now().Add(24 * time.Hour)
+	session.ExpiryTime = time.Now().UTC().Add(24 * time.Hour)
 	session.Ip = c.IP()
-	session.Device = c.Get(ua.OS + " " + ua.Name)
-	session.CreatedAt = time.Now()
-	session.UpdatedAt = time.Now()
+	session.Device = ua.OS + " " + ua.Name
+	session.CreatedAt = time.Now().UTC()
+	session.UpdatedAt = time.Now().UTC()
 	session.Session, err = utils.GenerateSessionString()
 	if err != nil {
 		log.Error(err)
@@ -229,7 +229,7 @@ func UserLogin(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "session",
 		Value:    session.Session,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().UTC().Add(24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
@@ -238,7 +238,7 @@ func UserLogin(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "userID",
 		Value:    user.ID,
-		Expires:  time.Now().Add(24 * time.Hour * 365),
+		Expires:  time.Now().UTC().Add(24 * time.Hour * 365),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
