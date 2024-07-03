@@ -1,0 +1,29 @@
+package utils
+
+import (
+	"crypto/rand"
+)
+
+func GenerateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func GenerateSessionString(n int) (string, error) {
+	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=<>?[]{}|~"
+	lettersLen := len(letters)
+	bytes, err := GenerateRandomBytes(n)
+	if err != nil {
+		return "", err
+	}
+
+	result := make([]byte, n)
+	for i, b := range bytes {
+		result[i] = letters[int(b)%lettersLen]
+	}
+	return string(result), nil
+}
