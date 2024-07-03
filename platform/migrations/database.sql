@@ -14,6 +14,7 @@ CREATE TABLE users (
 CREATE TABLE sessions (
     "id" char(20) NOT NULL,
     session char(128) NOT NULL,
+    expiry_time timestamp NOT NULL,
     ip varchar(64) NOT NULL,
     device varchar(64) NOT NULL,
     created_at timestamp NOT NULL,

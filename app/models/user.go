@@ -6,8 +6,8 @@ type UserRole int
 
 const (
 	HegonalOwner UserRole = iota
-	Admin
-	NormalUser
+	HegonalAdmin
+	HegonalUser
 )
 
 type User struct {

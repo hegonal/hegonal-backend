@@ -75,7 +75,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	user.UpdatedAt = time.Now()
 
 	if ownerAccountBeenCreated {
-		user.Role = models.NormalUser
+		user.Role = models.HegonalUser
 	} else {
 		user.Role = models.HegonalOwner
 	}
@@ -100,6 +100,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	ua := useragent.Parse(c.Get("User-Agent"))
 
 	session.ID = user.ID
+	session.ExpiryTime = time.Now().Add(24 * time.Hour)
 	session.Ip = c.IP()
 	session.Device = c.Get(ua.OS + " " + ua.Name)
 	session.CreatedAt = time.Now()
@@ -203,6 +204,7 @@ func UserLogin(c *fiber.Ctx) error {
 	ua := useragent.Parse(c.Get("User-Agent"))
 
 	session.ID = user.ID
+	session.ExpiryTime = time.Now().Add(24 * time.Hour)
 	session.Ip = c.IP()
 	session.Device = c.Get(ua.OS + " " + ua.Name)
 	session.CreatedAt = time.Now()

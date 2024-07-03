@@ -14,3 +14,20 @@ type Team struct {
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
+
+type TeamMemberRole int
+
+const (
+	TeamOwner TeamMemberRole = iota
+	TeamAdmin
+	TeamUser
+	TeamViewers
+)
+
+type TeamMember struct {
+	MemberID  string         `db:"member_id" json:"member_id" validate:"required,max=20"`
+	TeamID    string         `db:"team_id" json:"team_id" validate:"required,max=20"`
+	Role      TeamMemberRole `db:"role" json:"role" validate:"oneof=0 1 2 3"`
+	CreatedAt time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time      `db:"updated_at" json:"updated_at"`
+}
