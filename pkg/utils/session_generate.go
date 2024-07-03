@@ -2,6 +2,8 @@ package utils
 
 import (
 	"crypto/rand"
+
+	"github.com/hegonal/hegonal-backend/pkg/configs"
 )
 
 func GenerateRandomBytes(n int) ([]byte, error) {
@@ -13,15 +15,15 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 	return b, nil
 }
 
-func GenerateSessionString(n int) (string, error) {
+func GenerateSessionString() (string, error) {
 	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=<>?[]{}|~"
 	lettersLen := len(letters)
-	bytes, err := GenerateRandomBytes(n)
+	bytes, err := GenerateRandomBytes(configs.SessionLength)
 	if err != nil {
 		return "", err
 	}
 
-	result := make([]byte, n)
+	result := make([]byte, configs.SessionLength)
 	for i, b := range bytes {
 		result[i] = letters[int(b)%lettersLen]
 	}

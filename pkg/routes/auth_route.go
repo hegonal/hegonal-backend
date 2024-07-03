@@ -6,7 +6,6 @@ import (
 )
 
 func AuthRoutes(a fiber.Router) {
-	a.Post("/", controllers.UserSignUp)
 	authGroup := a.Group("/auth")
 
 	authGroup.Post("/signup", controllers.UserSignUp)

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -81,8 +80,6 @@ func UserSignUp(c *fiber.Ctx) error {
 		user.Role = models.HegonalOwner
 	}
 
-	fmt.Println(user.Role)
-
 	if err := validate.Struct(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
@@ -107,7 +104,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	session.Device = c.Get(ua.OS + " " + ua.Name)
 	session.CreatedAt = time.Now()
 	session.UpdatedAt = time.Now()
-	session.Session, err = utils.GenerateSessionString(128)
+	session.Session, err = utils.GenerateSessionString()
 
 	if err != nil {
 		log.Error(err)
@@ -137,7 +134,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "userID",
 		Value:    user.ID,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(24 * time.Hour * 365),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
@@ -210,7 +207,7 @@ func UserLogin(c *fiber.Ctx) error {
 	session.Device = c.Get(ua.OS + " " + ua.Name)
 	session.CreatedAt = time.Now()
 	session.UpdatedAt = time.Now()
-	session.Session, err = utils.GenerateSessionString(128)
+	session.Session, err = utils.GenerateSessionString()
 	if err != nil {
 		log.Error(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -239,7 +236,7 @@ func UserLogin(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "userID",
 		Value:    user.ID,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(24 * time.Hour * 365),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",

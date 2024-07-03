@@ -25,6 +25,7 @@ func main() {
 	route := app.Group("/api")
 
 	routes.AuthRoutes(route)
+	routes.TeamRoutes(route)
 	routes.NotFoundRoute(route)
 
 	if os.Getenv("STAGE_STATUS") == "dev" {

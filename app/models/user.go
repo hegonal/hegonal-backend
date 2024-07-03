@@ -12,7 +12,7 @@ const (
 
 type User struct {
 	ID            string    `db:"id" json:"id" validate:"required,max=20"`
-	Name          string    `db:"name" json:"name" validate:"required,max=255"`
+	Name          string    `db:"name" json:"name" validate:"required,max=32"`
 	Password      string    `db:"password" json:"password" validate:"required,len=60"`
 	Email         string    `db:"email" json:"email" validate:"required,email,max=255"`
 	Avatar        string    `db:"avatar" json:"avatar" validate:"max=255"`
