@@ -10,5 +10,5 @@ func TeamRoutes(a fiber.Router) {
 	authGroup := a.Group("/team")
 	authGroup.Use(middleware.SessionValidationMiddleware)
 
-	authGroup.Post("/add", controllers.TeamAdd)
+	authGroup.Post("/add", controllers.CreateNewTeam)
 }

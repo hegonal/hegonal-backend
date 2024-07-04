@@ -35,7 +35,7 @@ func (q *UserQueries) CreateNewUser(u *models.User) error {
 
 	_, err := q.Exec(
 		query,
-		u.ID, u.Name, u.Password, u.Email, u.Avatar, u.Role, u.TwoFactorAuth, u.CreatedAt, u.UpdatedAt,
+		u.UserID, u.Name, u.Password, u.Email, u.Avatar, u.Role, u.TwoFactorAuth, u.CreatedAt, u.UpdatedAt,
 	)
 	if err != nil {
 		return err

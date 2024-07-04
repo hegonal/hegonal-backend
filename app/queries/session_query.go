@@ -12,12 +12,12 @@ type SessionQueries struct {
 	*sqlx.DB
 }
 
-func (q *SessionQueries) CreateNewSession(s *models.Session) error {
+func (q *SessionQueries) CreateNewSession(session *models.Session) error {
 	query := `INSERT INTO sessions VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err := q.Exec(
 		query,
-		s.ID, s.Session, s.ExpiryTime, s.Ip, s.Device, s.CreatedAt, s.UpdatedAt,
+		session.UserID, session.Session, session.ExpiryTime, session.Ip, session.Device, session.CreatedAt, session.UpdatedAt,
 	)
 	if err != nil {
 		return err
@@ -26,10 +26,10 @@ func (q *SessionQueries) CreateNewSession(s *models.Session) error {
 	return nil
 }
 
-func (q *UserQueries) GetSession(userID, s string) (models.Session, error) {
+func (q *UserQueries) GetSession(userID, userSession string) (models.Session, error) {
 	var session models.Session
-	query := "SELECT id, session, expiry_time, ip, device, created_at, updated_at FROM sessions WHERE id = $1 AND session = $2"
-	err := q.Get(&session, query, userID, s)
+	query := "SELECT user_id, session, expiry_time, ip, device, created_at, updated_at FROM sessions WHERE user_id = $1 AND session = $2"
+	err := q.Get(&session, query, userID, userSession)
 	if err != nil {
 		return session, err
 	}
@@ -37,7 +37,7 @@ func (q *UserQueries) GetSession(userID, s string) (models.Session, error) {
 }
 
 func (q *SessionQueries) DeleteSession(userID string, session string) error {
-	query := `DELETE FROM sessions WHERE id = $1 AND session = $2`
+	query := `DELETE FROM sessions WHERE user_id = $1 AND session = $2`
 
 	_, err := q.Exec(query, userID, session)
 	if err != nil {
@@ -48,7 +48,7 @@ func (q *SessionQueries) DeleteSession(userID string, session string) error {
 }
 
 func (q *SessionQueries) UpdateSession(userID string, oldSession string, newSession string, expriceTime time.Time) error {
-	query := `UPDATE sessions SET session = $1, expiry_time = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND session = $4`
+	query := `UPDATE sessions SET session = $1, expiry_time = $2, updated_at = CURRENT_TIMESTAMP WHERE user_id = $3 AND session = $4`
 
 	result, err := q.Exec(query, newSession, expriceTime, userID, oldSession)
 	if err != nil {
@@ -73,7 +73,7 @@ func (q *SessionQueries) RotateSession(userID, oldSession string) (string, error
 		return "", err
 	}
 
-	if err = q.UpdateSession(userID, oldSession, newSession, time.Now().UTC().Add(24*time.Hour)); err != nil {
+	if err = q.UpdateSession(userID, oldSession, newSession, utils.TimeNow().Add(24*time.Hour)); err != nil {
 		return "", err
 	}
 

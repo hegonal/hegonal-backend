@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/hegonal/hegonal-backend/pkg/utils"
 	"github.com/hegonal/hegonal-backend/platform/database"
 )
 
@@ -43,7 +44,7 @@ func SessionValidationMiddleware(c *fiber.Ctx) error {
 		})
 	}
 
-	if userSession.ExpiryTime.Before(time.Now().UTC()) {
+	if userSession.ExpiryTime.Before(utils.TimeNow()) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,
 			"msg":   "Session expired, please login again",
@@ -51,7 +52,7 @@ func SessionValidationMiddleware(c *fiber.Ctx) error {
 	}
 
 	refreshThreshold := 23 * time.Hour + 45 * time.Minute
-	if userSession.ExpiryTime.Sub(time.Now().UTC()) < refreshThreshold {
+	if userSession.ExpiryTime.Sub(utils.TimeNow()) < refreshThreshold {
 		newSession, err := db.RotateSession(userID, session)
 		if err != nil {
 			log.Error("Failed to rotate session:", err)
@@ -64,7 +65,7 @@ func SessionValidationMiddleware(c *fiber.Ctx) error {
 		c.Cookie(&fiber.Cookie{
 			Name:     "session",
 			Value:    newSession,
-			Expires:  time.Now().UTC().Add(24 * time.Hour),
+			Expires:  utils.TimeNow().Add(24 * time.Hour),
 			HTTPOnly: true,
 			Secure:   true,
 			SameSite: "Lax",

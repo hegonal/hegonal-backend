@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/hegonal/hegonal-backend/app/models"
@@ -10,12 +8,12 @@ import (
 	"github.com/hegonal/hegonal-backend/platform/database"
 )
 
-func TeamAdd(c *fiber.Ctx) error {
-	teamAdd := &models.TeamAdd{}
+func CreateNewTeam(c *fiber.Ctx) error {
+	createNewTeam := &models.CreateNewTeam{}
 
-	_ = c.Cookies("userID")
+	userID := c.Cookies("userID")
 
-	if err := c.BodyParser(teamAdd); err != nil {
+	if err := c.BodyParser(createNewTeam); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   err.Error(),
@@ -23,8 +21,7 @@ func TeamAdd(c *fiber.Ctx) error {
 	}
 
 	validate := utils.NewValidator()
-	if err := validate.Struct(teamAdd); err != nil {
-		log.Error(err)
+	if err := validate.Struct(createNewTeam); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   utils.ValidatorErrors(err),
@@ -41,13 +38,28 @@ func TeamAdd(c *fiber.Ctx) error {
 	}
 
 	team := &models.Team{}
-	team.ID = utils.GenerateId()
-	team.Name = teamAdd.Name
-	team.Description = teamAdd.Description
-	team.CreatedAt = time.Now().UTC()
-	team.UpdatedAt = time.Now().UTC()
+	team.TeamID = utils.GenerateId()
+	team.Name = createNewTeam.Name
+	team.Description = createNewTeam.Description
+	team.CreatedAt = utils.TimeNow()
+	team.UpdatedAt = utils.TimeNow()
 
 	if err := db.CreateNewTeam(team); err != nil {
+		log.Error(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+
+	teamMember := &models.TeamMember{}
+	teamMember.TeamID = team.TeamID
+	teamMember.MemberID = userID
+	teamMember.Role = models.TeamOwner
+	teamMember.CreatedAt = utils.TimeNow()
+	teamMember.UpdatedAt = utils.TimeNow()
+
+	if err := db.CreateNewMember(teamMember); err != nil {
 		log.Error(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,

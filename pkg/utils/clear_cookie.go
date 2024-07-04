@@ -10,7 +10,7 @@ func ClearCookies(c *fiber.Ctx, key ...string) {
 	for i := range key {
 		c.Cookie(&fiber.Cookie{
 			Name:    key[i],
-			Expires: time.Now().UTC().Add(-time.Hour * 24),
+			Expires: TimeNow().Add(-time.Hour * 24),
 			Value:   "",
 		})
 	}

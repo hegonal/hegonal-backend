@@ -26,6 +26,8 @@ func main() {
 
 	routes.AuthRoutes(route)
 	routes.TeamRoutes(route)
+	routes.MonitorRoutes(route)
+
 	routes.NotFoundRoute(route)
 
 	if os.Getenv("STAGE_STATUS") == "dev" {

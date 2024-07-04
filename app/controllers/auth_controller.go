@@ -67,24 +67,17 @@ func UserSignUp(c *fiber.Ctx) error {
 		})
 	}
 
-	user.ID = utils.GenerateId()
+	user.UserID = utils.GenerateId()
 	user.Name = signUp.Name
 	user.Password = utils.GeneratePassword(signUp.Password)
 	user.Email = signUp.Email
-	user.CreatedAt = time.Now().UTC()
-	user.UpdatedAt = time.Now().UTC()
+	user.CreatedAt = utils.TimeNow()
+	user.UpdatedAt = utils.TimeNow()
 
 	if ownerAccountBeenCreated {
 		user.Role = models.HegonalUser
 	} else {
 		user.Role = models.HegonalOwner
-	}
-
-	if err := validate.Struct(user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": true,
-			"msg":   utils.ValidatorErrors(err),
-		})
 	}
 
 	if err := db.CreateNewUser(user); err != nil {
@@ -99,12 +92,12 @@ func UserSignUp(c *fiber.Ctx) error {
 
 	ua := useragent.Parse(c.Get("User-Agent"))
 
-	session.ID = user.ID
-	session.ExpiryTime = time.Now().UTC().Add(24 * time.Hour)
+	session.UserID = user.UserID
+	session.ExpiryTime = utils.TimeNow().Add(24 * time.Hour)
 	session.Ip = c.IP()
 	session.Device = c.Get(ua.OS + " " + ua.Name)
-	session.CreatedAt = time.Now().UTC()
-	session.UpdatedAt = time.Now().UTC()
+	session.CreatedAt = utils.TimeNow()
+	session.UpdatedAt = utils.TimeNow()
 	session.Session, err = utils.GenerateSessionString()
 
 	if err != nil {
@@ -126,7 +119,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "session",
 		Value:    session.Session,
-		Expires:  time.Now().UTC().Add(24 * time.Hour),
+		Expires:  utils.TimeNow().Add(24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
@@ -134,8 +127,8 @@ func UserSignUp(c *fiber.Ctx) error {
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "userID",
-		Value:    user.ID,
-		Expires:  time.Now().UTC().Add(24 * time.Hour * 365),
+		Value:    user.UserID,
+		Expires:  utils.TimeNow().Add(24 * time.Hour * 365),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
@@ -203,13 +196,14 @@ func UserLogin(c *fiber.Ctx) error {
 
 	ua := useragent.Parse(c.Get("User-Agent"))
 
-	session.ID = user.ID
-	session.ExpiryTime = time.Now().UTC().Add(24 * time.Hour)
+	session.UserID = user.UserID
+	session.ExpiryTime = utils.TimeNow().Add(24 * time.Hour)
 	session.Ip = c.IP()
 	session.Device = ua.OS + " " + ua.Name
-	session.CreatedAt = time.Now().UTC()
-	session.UpdatedAt = time.Now().UTC()
+	session.CreatedAt = utils.TimeNow()
+	session.UpdatedAt = utils.TimeNow()
 	session.Session, err = utils.GenerateSessionString()
+
 	if err != nil {
 		log.Error(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -229,7 +223,7 @@ func UserLogin(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "session",
 		Value:    session.Session,
-		Expires:  time.Now().UTC().Add(24 * time.Hour),
+		Expires:  utils.TimeNow().Add(24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
@@ -237,8 +231,8 @@ func UserLogin(c *fiber.Ctx) error {
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "userID",
-		Value:    user.ID,
-		Expires:  time.Now().UTC().Add(24 * time.Hour * 365),
+		Value:    user.UserID,
+		Expires:  utils.TimeNow().Add(24 * time.Hour * 365),
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "Lax",
