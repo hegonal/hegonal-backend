@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/lib/pq"
+)
 
 type HttpMethod int
 
@@ -24,10 +28,20 @@ const (
 	BodyXML
 )
 
+type HttpMonitorStatus int
+
+const (
+	HttpMonitorStatusStop HttpMonitorStatus = iota
+	HttpMonitorStatusUp
+	HttpMonitorStatusDown
+	HttpMonitorStatusUnknow
+)
+
+
 type HttpMonitor struct {
-	HttpMonitorID                 string `db:"http_monitor_id" json:"http_monitor_id" validate:"required,max=20"`
+	HttpMonitorID      string `db:"http_monitor_id" json:"http_monitor_id" validate:"required,max=20"`
 	TeamID             string `db:"team_id" json:"team_id" validate:"required,max=20"`
-	Active             bool   `db:"active" json:"active" validate:"required"`
+	Status             HttpMonitorStatus   `db:"status" json:"status" validate:"required"`
 	URL                string `db:"url" json:"url" validate:"required,http_url,max=255"`
 	Interval           int    `db:"interval" json:"interval" validate:"required,lte=86400"`
 	Retries            int    `db:"retries" json:"retries" validate:"required,lte=32767"`
@@ -40,17 +54,17 @@ type HttpMonitor struct {
 	// day
 	SslExpiryReminders int `db:"ssl_expiry_reminders" json:"ssl_expiry_reminders" validate:"required,lte=32767"`
 	// day
-	DomainExpiryReminders int          `db:"domain_expiry_reminders" json:"domain_expiry_reminders" validate:"required,lte=32767"`
-	HttpStatusCodes       []string     `db:"http_status_codes" json:"http_status_codes" validate:"required,dive,max=3"`
-	HttpMethod            HttpMethod   `db:"http_method" json:"http_method" validate:"oneof=0 1 2 3 4 5 6"`
-	BodyEncoding          *BodyEncoding `db:"body_encoding" json:"body_encoding"`
-	RequestBody           *string       `db:"request_body" json:"request_body"`
-	RequestHeaders        *string       `db:"request_headers" json:"request_headers"`
-	Group                 *string      `db:"group" json:"group"`
-	Notification          *string      `db:"notification" json:"notification"`
-	Proxy                 *string      `db:"proxy" json:"proxy"`
-	CreatedAt             time.Time    `db:"created_at" json:"created_at"`
-	UpdatedAt             time.Time    `db:"updated_at" json:"updated_at"`
+	DomainExpiryReminders int            `db:"domain_expiry_reminders" json:"domain_expiry_reminders" validate:"required,lte=32767"`
+	HttpStatusCodes       pq.StringArray `db:"http_status_codes" json:"http_status_codes" validate:"required,dive,max=3"`
+	HttpMethod            HttpMethod     `db:"http_method" json:"http_method" validate:"oneof=0 1 2 3 4 5 6"`
+	BodyEncoding          *BodyEncoding  `db:"body_encoding" json:"body_encoding"`
+	RequestBody           *string        `db:"request_body" json:"request_body"`
+	RequestHeaders        *string        `db:"request_headers" json:"request_headers"`
+	Group                 *string        `db:"group" json:"group"`
+	Notification          *string        `db:"notification" json:"notification"`
+	Proxy                 *string        `db:"proxy" json:"proxy"`
+	CreatedAt             time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt             time.Time      `db:"updated_at" json:"updated_at"`
 }
 
 type CreateNewHttpMonitor struct {
@@ -67,13 +81,13 @@ type CreateNewHttpMonitor struct {
 	// day
 	SslExpiryReminders int `db:"ssl_expiry_reminders" json:"ssl_expiry_reminders" validate:"required,lte=32767"`
 	// day
-	DomainExpiryReminders int          `db:"domain_expiry_reminders" json:"domain_expiry_reminders" validate:"required,lte=32767"`
-	HttpStatusCodes       []string     `db:"http_status_codes" json:"http_status_codes" validate:"required,dive,max=3"`
-	HttpMethod            HttpMethod   `db:"http_method" json:"http_method" validate:"oneof=0 1 2 3 4 5 6"`
-	BodyEncoding          *BodyEncoding `db:"body_encoding" json:"body_encoding"`
-	RequestBody           *string       `db:"request_body" json:"request_body"`
-	RequestHeaders        *string       `db:"request_headers" json:"request_headers"`
-	Group                 *string      `db:"group" json:"group"`
-	Notification          *string      `db:"notification" json:"notification"`
-	Proxy                 *string      `db:"proxy" json:"proxy"`
+	DomainExpiryReminders int            `db:"domain_expiry_reminders" json:"domain_expiry_reminders" validate:"required,lte=32767"`
+	HttpStatusCodes       pq.StringArray `db:"http_status_codes" json:"http_status_codes" validate:"required,dive,max=3"`
+	HttpMethod            HttpMethod     `db:"http_method" json:"http_method" validate:"oneof=0 1 2 3 4 5 6"`
+	BodyEncoding          *BodyEncoding  `db:"body_encoding" json:"body_encoding"`
+	RequestBody           *string        `db:"request_body" json:"request_body"`
+	RequestHeaders        *string        `db:"request_headers" json:"request_headers"`
+	Group                 *string        `db:"group" json:"group"`
+	Notification          *string        `db:"notification" json:"notification"`
+	Proxy                 *string        `db:"proxy" json:"proxy"`
 }

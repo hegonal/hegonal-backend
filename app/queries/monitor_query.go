@@ -11,11 +11,11 @@ type MonitorQueries struct {
 
 func (q *MonitorQueries) CreateNewHttpMonitor(httpMonitor *models.HttpMonitor) error {
 	query := `
-		INSERT INTO http_monitors (http_monitor_id, team_id, active, url, interval, retries, retry_interval,
+		INSERT INTO http_monitors (http_monitor_id, team_id, status, url, interval, retries, retry_interval,
 			request_timeout, resend_notification, follow_redirections, max_redirects, check_ssl_error,
 			ssl_expiry_reminders, domain_expiry_reminders, http_status_codes, http_method, body_encoding,
 			request_body, request_headers, "group", notification, proxy, created_at, updated_at)
-		VALUES (:http_monitor_id, :team_id, :active, :url, :interval, :retries, :retry_interval,
+		VALUES (:http_monitor_id, :team_id, :status, :url, :interval, :retries, :retry_interval,
 			:request_timeout, :resend_notification, :follow_redirections, :max_redirects, :check_ssl_error,
 			:ssl_expiry_reminders, :domain_expiry_reminders, :http_status_codes, :http_method, :body_encoding,
 			:request_body, :request_headers, :group, :notification, :proxy, :created_at, :updated_at)
@@ -27,4 +27,51 @@ func (q *MonitorQueries) CreateNewHttpMonitor(httpMonitor *models.HttpMonitor) e
 	}
 
 	return nil
+}
+
+func (q *MonitorQueries) GetHttpMonitorByID(httpMonitorID string) (*models.HttpMonitor, error) {
+	query := `
+		SELECT http_monitor_id, team_id, status, url, interval, retries, retry_interval,
+			request_timeout, resend_notification, follow_redirections, max_redirects, check_ssl_error,
+			ssl_expiry_reminders, domain_expiry_reminders, http_status_codes, http_method, body_encoding,
+			request_body, request_headers, "group", notification, proxy, created_at, updated_at
+		FROM http_monitors
+		WHERE http_monitor_id = $1
+	`
+
+	var httpMonitor models.HttpMonitor
+	err := q.DB.Get(&httpMonitor, query, httpMonitorID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &httpMonitor, nil
+}
+
+func (q *MonitorQueries) GetAllHttpMonitors() ([]models.HttpMonitor, error) {
+	query := `
+		SELECT * FROM http_monitors
+	`
+
+	var httpMonitors []models.HttpMonitor
+	err := q.DB.Select(&httpMonitors, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return httpMonitors, nil
+}
+
+func (q *MonitorQueries) CreateNewIncidents() ([]models.HttpMonitor, error) {
+	query := `
+		SELECT * FROM http_monitors
+	`
+
+	var httpMonitors []models.HttpMonitor
+	err := q.DB.Select(&httpMonitors, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return httpMonitors, nil
 }

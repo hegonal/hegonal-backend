@@ -1,3 +1,10 @@
+CREATE TABLE server_locations (
+    server_id varchar(32) NOT NULL,
+    server_display_name varchar(32) NOT NULL,
+    country char(3),
+    CONSTRAINT SERVER_LOCATIONS_PK_1 PRIMARY KEY (server_id)
+);
+
 CREATE TABLE users (
     "user_id" bigint NOT NULL,
     name varchar(32) NOT NULL,
@@ -55,7 +62,7 @@ ADD
 CREATE TABLE http_monitors (
     "http_monitor_id" bigint NOT NULL,
     team_id bigint NOT NULL,
-    active boolean NOT NULL,
+    status smallint NOT NULL,
     url varchar(255) NOT NULL,
     "interval" integer NOT NULL,
     retries smallint NOT NULL,
@@ -114,6 +121,27 @@ CREATE TABLE proxies (
     "proxy_id" bigint NOT NULL,
     CONSTRAINT PROXIES_PK_1 PRIMARY KEY ("proxy_id")
 );
+
+CREATE TABLE incidents (
+    incident_id bigint NOT NULL,
+    team_id bigint NOT NULL,
+    http_monitor_id bigint NULL,
+    conrim_location varchar(32) [] NULL,
+    recover_location varchar(32) [] NULL,
+    http_status_code char(3) NULL,
+    incident_type smallint NOT NULL,
+    incident_status smallint NOT NULL,
+    incident_message text NOT NULL,
+    notifications bool NOT NULL,
+    incident_end timestamp NOT NULL,
+    incident_start timestamp NOT NULL,
+    updated_at timestamp NOT NULL,
+    CONSTRAINT INCIDENT_PK_1 PRIMARY KEY (incident_id)
+);
+
+-- CREATE INDEX FK_1 ON incidents (http_monitor_id);
+
+-- CREATE INDEX FK_2 ON incidents (team_id);
 
 CREATE TABLE http_monitor_long_history (
     http_monitor_id bigint NOT NULL,

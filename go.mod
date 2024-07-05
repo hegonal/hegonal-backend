@@ -1,6 +1,8 @@
 module github.com/hegonal/hegonal-backend
 
-go 1.19
+go 1.21
+
+toolchain go1.22.4
 
 require (
 	github.com/go-playground/validator/v10 v10.22.0
@@ -9,6 +11,9 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
+	github.com/likexian/whois v1.15.3
+	github.com/likexian/whois-parser v1.24.18
 	github.com/mileusna/useragent v1.3.4
 	golang.org/x/crypto v0.24.0
 )
@@ -28,6 +33,7 @@ require (
 	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/likexian/gokit v0.25.15 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect

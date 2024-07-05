@@ -65,7 +65,7 @@ func CreateNewHttpMonitor(c *fiber.Ctx) error {
 	httpMonitor := &models.HttpMonitor{}
 	httpMonitor.HttpMonitorID = utils.GenerateId()
 	httpMonitor.TeamID = createNewHttpMonitor.TeamID
-	httpMonitor.Active = true
+	httpMonitor.Status = models.HttpMonitorStatusUnknow
 	httpMonitor.URL = createNewHttpMonitor.URL
 	httpMonitor.Interval = createNewHttpMonitor.Interval
 	httpMonitor.Retries = createNewHttpMonitor.Retries

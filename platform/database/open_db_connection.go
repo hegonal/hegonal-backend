@@ -10,6 +10,7 @@ type Queries struct {
 	*queries.SessionQueries
 	*queries.TeamQueries
 	*queries.MonitorQueries
+	*queries.ServerQueries
 }
 
 func OpenDBConnection() (*Queries, error) {
@@ -29,5 +30,6 @@ func OpenDBConnection() (*Queries, error) {
 		SessionQueries: &queries.SessionQueries{DB: db},
 		TeamQueries:    &queries.TeamQueries{DB: db},
 		MonitorQueries: &queries.MonitorQueries{DB: db},
+		ServerQueries:  &queries.ServerQueries{DB: db},
 	}, nil
 }
