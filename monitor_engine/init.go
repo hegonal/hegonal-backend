@@ -8,6 +8,8 @@ import (
 	"github.com/hegonal/hegonal-backend/platform/database"
 )
 
+var ServerID string
+
 func RunMonitorEngine() {
 	db, err := database.OpenDBConnection()
 	if err != nil {
@@ -26,7 +28,7 @@ func RunMonitorEngine() {
 
 	for _, httpMonitor := range httpMonitors {
 		if httpMonitor.Status != models.HttpMonitorStatusStop {
-			go startHttpMonitor(&httpMonitor)
+			go startHttpMonitor(httpMonitor)
 		}
 	}
 
@@ -35,6 +37,7 @@ func RunMonitorEngine() {
 
 func checkAndCraeteServerLocation(db *database.Queries) {
 	serverID := os.Getenv("SERVER_ID")
+	ServerID = serverID
 	isServerLocationExist, err := db.ServerLocationExists(serverID)
 	if err != nil {
 		log.Error(err)

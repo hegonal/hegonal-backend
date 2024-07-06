@@ -1,6 +1,7 @@
 package queries
 
 import (
+
 	"github.com/hegonal/hegonal-backend/app/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -49,20 +50,6 @@ func (q *MonitorQueries) GetHttpMonitorByID(httpMonitorID string) (*models.HttpM
 }
 
 func (q *MonitorQueries) GetAllHttpMonitors() ([]models.HttpMonitor, error) {
-	query := `
-		SELECT * FROM http_monitors
-	`
-
-	var httpMonitors []models.HttpMonitor
-	err := q.DB.Select(&httpMonitors, query)
-	if err != nil {
-		return nil, err
-	}
-
-	return httpMonitors, nil
-}
-
-func (q *MonitorQueries) CreateNewIncidents() ([]models.HttpMonitor, error) {
 	query := `
 		SELECT * FROM http_monitors
 	`

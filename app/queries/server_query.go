@@ -46,3 +46,4 @@ func (q *ServerQueries) GetServerLocation(serverID string) (*models.ServerLocati
 
 	return &serverLocation, nil
 }
+

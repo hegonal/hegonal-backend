@@ -17,17 +17,15 @@ import (
 )
 
 // Start http monitor through goroutine
-func startHttpMonitor(httpMonitor *models.HttpMonitor) {
+func startHttpMonitor(httpMonitor models.HttpMonitor) {
 	for {
-		go func(monitor *models.HttpMonitor) {
-			checkHttpStatus(monitor)
-		}(httpMonitor)
+		go checkHttpStatus(httpMonitor)
 		time.Sleep(time.Duration(httpMonitor.Interval) * time.Second)
 	}
 }
 
 // Check http status function
-func checkHttpStatus(httpMonitor *models.HttpMonitor) {
+func checkHttpStatus(httpMonitor models.HttpMonitor) {
 	req, err := buildRequest(httpMonitor)
 	if err != nil {
 		log.Error(err)
@@ -71,10 +69,11 @@ func checkHttpStatus(httpMonitor *models.HttpMonitor) {
 		return
 	}
 	log.Info(ping)
+	SloveIncidentHandler(httpMonitor)
 }
 
 // Build request config to request
-func buildRequest(httpMonitor *models.HttpMonitor) (*http.Request, error) {
+func buildRequest(httpMonitor models.HttpMonitor) (*http.Request, error) {
 	var method string
 
 	switch httpMonitor.HttpMethod {
@@ -108,7 +107,7 @@ func buildRequest(httpMonitor *models.HttpMonitor) (*http.Request, error) {
 }
 
 // Build a custom http(s) client to send requests
-func buildHttpClient(httpMonitor *models.HttpMonitor) *http.Client {
+func buildHttpClient(httpMonitor models.HttpMonitor) *http.Client {
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: !httpMonitor.CheckSslError},
@@ -151,7 +150,7 @@ func handleHttpError(err error) (errorType models.IncidentType, resultError erro
 }
 
 // Check status code is match config
-func checkStatusCode(httpMonitor *models.HttpMonitor, statusCode int) (errorType models.IncidentType, resultError error) {
+func checkStatusCode(httpMonitor models.HttpMonitor, statusCode int) (errorType models.IncidentType, resultError error) {
 	statusCategory := getCategory(statusCode)
 	if !containsStatusCode(httpMonitor.HttpStatusCodes, statusCategory, statusCode) {
 		return models.IncidentTypeStatusCodeNotMatch, fmt.Errorf("status code not match")
@@ -160,7 +159,7 @@ func checkStatusCode(httpMonitor *models.HttpMonitor, statusCode int) (errorType
 }
 
 // Check is the ssl license expiry
-func checkSslExpiry(httpMonitor *models.HttpMonitor, tlsState *tls.ConnectionState) (errorType models.IncidentType, expiryDays int, resultError error) {
+func checkSslExpiry(httpMonitor models.HttpMonitor, tlsState *tls.ConnectionState) (errorType models.IncidentType, expiryDays int, resultError error) {
 	var daysLeft int
 	// check if need to check ssl expiry
 	if httpMonitor.SslExpiryReminders < 1 {
@@ -184,7 +183,7 @@ func checkSslExpiry(httpMonitor *models.HttpMonitor, tlsState *tls.ConnectionSta
 }
 
 // Check is the  domain name about th expiry
-func checkDomainExpiry(httpMonitor *models.HttpMonitor) (errorType models.IncidentType, daysLeft int, err error) {
+func checkDomainExpiry(httpMonitor models.HttpMonitor) (errorType models.IncidentType, daysLeft int, err error) {
 	if httpMonitor.DomainExpiryReminders < 1 {
 		return models.IncidentTypeFine, 0, nil
 	}

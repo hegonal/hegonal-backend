@@ -126,22 +126,43 @@ CREATE TABLE incidents (
     incident_id bigint NOT NULL,
     team_id bigint NOT NULL,
     http_monitor_id bigint NULL,
-    conrim_location varchar(32) [] NULL,
+    expiry_date timestamp NULL,
+    confirm_location varchar(32) [] NULL,
     recover_location varchar(32) [] NULL,
     http_status_code char(3) NULL,
     incident_type smallint NOT NULL,
     incident_status smallint NOT NULL,
     incident_message text NOT NULL,
     notifications bool NOT NULL,
-    incident_end timestamp NOT NULL,
+    incident_end timestamp,
     incident_start timestamp NOT NULL,
     updated_at timestamp NOT NULL,
     CONSTRAINT INCIDENT_PK_1 PRIMARY KEY (incident_id)
 );
 
--- CREATE INDEX FK_1 ON incidents (http_monitor_id);
+ALTER TABLE
+    incidents
+ADD
+    CONSTRAINT INCIDENTS_FK_1 FOREIGN KEY (http_monitor_id) REFERENCES http_monitors(http_monitor_id),
+ADD
+    CONSTRAINT INCIDENTS_FK_2 FOREIGN KEY (team_id) REFERENCES teams(team_id);
 
--- CREATE INDEX FK_2 ON incidents (team_id);
+CREATE TABLE incident_timelines (
+    incident_timeline_id bigint NOT NULL,
+    incident_id bigint NOT NULL,
+    status_type smallint NOT NULL,
+    message text NOT NULL,
+    created_at timestamp NOT NULL,
+    server_id varchar(32) NOT NULL,
+    CONSTRAINT INCIDENT_TIMELINES_PK_1 PRIMARY KEY (incident_timeline_id, incident_id)
+);
+
+ALTER TABLE
+    incident_timelines
+ADD
+    CONSTRAINT INCIDENT_TIMELINES_FK_1 FOREIGN KEY (incident_id) REFERENCES incidents(incident_id),
+ADD
+    CONSTRAINT INCIDENT_TIMELINES_FK_2 FOREIGN KEY (server_id) REFERENCES server_locations(server_id);
 
 CREATE TABLE http_monitor_long_history (
     http_monitor_id bigint NOT NULL,
