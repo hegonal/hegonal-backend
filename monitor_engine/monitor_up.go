@@ -26,7 +26,12 @@ func SloveIncidentHandler(httpMonitor models.HttpMonitor) {
 	}
 
 	// check all ongoing incident and update it if reslove
+	IncidentCheckIfReslove(db, incidents, httpMonitor)
+}
+
+func IncidentCheckIfReslove(db *database.Queries, incidents []models.Incident, httpMonitor models.HttpMonitor) {
 	for _, incident := range incidents {
+
 		if !utils.StringContains(incident.ConfirmLocation, ServerID) {
 			continue
 		}
@@ -65,6 +70,7 @@ func SloveIncidentHandler(httpMonitor models.HttpMonitor) {
 				log.Error(err)
 				continue
 			}
+			sendNotifications(incident, httpMonitor, db)
 		} else {
 			incident.UpdatedAt = utils.TimeNow()
 			if err := db.UpdateIncident(&incident); err != nil {
@@ -73,4 +79,5 @@ func SloveIncidentHandler(httpMonitor models.HttpMonitor) {
 			}
 		}
 	}
+
 }
