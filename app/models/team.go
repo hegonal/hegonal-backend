@@ -18,7 +18,8 @@ type Team struct {
 type TeamMemberRole int
 
 const (
-	TeamViewers TeamMemberRole = iota
+	TeamNoneRole TeamMemberRole = iota
+	TeamViewers 
 	TeamUser
 	TeamAdmin
 	TeamOwner

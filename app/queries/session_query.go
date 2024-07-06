@@ -28,7 +28,18 @@ func (q *SessionQueries) CreateNewSession(session *models.Session) error {
 
 func (q *UserQueries) GetSession(userID, userSession string) (models.Session, error) {
 	var session models.Session
-	query := "SELECT user_id, session, expiry_time, ip, device, created_at, updated_at FROM sessions WHERE user_id = $1 AND session = $2"
+	query := `
+	SELECT user_id,
+		session,
+		expiry_time,
+		ip,
+		device,
+		created_at,
+		updated_at
+	FROM sessions
+	WHERE user_id = $1
+		AND session = $2
+	`
 	err := q.Get(&session, query, userID, userSession)
 	if err != nil {
 		return session, err
@@ -37,7 +48,11 @@ func (q *UserQueries) GetSession(userID, userSession string) (models.Session, er
 }
 
 func (q *SessionQueries) DeleteSession(userID string, session string) error {
-	query := `DELETE FROM sessions WHERE user_id = $1 AND session = $2`
+	query := `
+	DELETE FROM sessions
+	WHERE user_id = $1
+    	AND session = $2
+	`
 
 	_, err := q.Exec(query, userID, session)
 	if err != nil {
@@ -48,7 +63,14 @@ func (q *SessionQueries) DeleteSession(userID string, session string) error {
 }
 
 func (q *SessionQueries) UpdateSession(userID string, oldSession string, newSession string, expriceTime time.Time) error {
-	query := `UPDATE sessions SET session = $1, expiry_time = $2, updated_at = CURRENT_TIMESTAMP WHERE user_id = $3 AND session = $4`
+	query := `
+	UPDATE sessions
+	SET session = $1,
+		expiry_time = $2,
+		updated_at = CURRENT_TIMESTAMP
+	WHERE user_id = $3
+		AND session = $4
+	`
 
 	result, err := q.Exec(query, newSession, expriceTime, userID, oldSession)
 	if err != nil {

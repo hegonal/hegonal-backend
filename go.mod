@@ -5,6 +5,7 @@ go 1.21
 toolchain go1.22.4
 
 require (
+	github.com/bensch777/discord-webhook-golang v0.0.6
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/godruoyi/go-snowflake v0.0.2
 	github.com/gofiber/fiber/v2 v2.52.5

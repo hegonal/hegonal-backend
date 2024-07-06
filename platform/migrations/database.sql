@@ -4,7 +4,6 @@ CREATE TABLE server_locations (
     country char(3),
     CONSTRAINT SERVER_LOCATIONS_PK_1 PRIMARY KEY (server_id)
 );
-
 CREATE TABLE users (
     "user_id" bigint NOT NULL,
     name varchar(32) NOT NULL,
@@ -17,7 +16,6 @@ CREATE TABLE users (
     updated_at timestamp NOT NULL,
     CONSTRAINT USERS_PK_1 PRIMARY KEY ("user_id")
 );
-
 CREATE TABLE sessions (
     user_id bigint NOT NULL,
     session char(128) NOT NULL,
@@ -28,12 +26,6 @@ CREATE TABLE sessions (
     updated_at timestamp NOT NULL,
     CONSTRAINT SESSIONS_PK_1 PRIMARY KEY ("user_id", session)
 );
-
-ALTER TABLE
-    sessions
-ADD
-    CONSTRAINT SESSIONS_FK_1 FOREIGN KEY (user_id) REFERENCES users(user_id);
-
 CREATE TABLE teams (
     "team_id" bigint NOT NULL,
     name varchar(64) NOT NULL,
@@ -42,7 +34,6 @@ CREATE TABLE teams (
     updated_at timestamp NOT NULL,
     CONSTRAINT TEAMS_PK_1 PRIMARY KEY ("team_id")
 );
-
 CREATE TABLE team_members (
     member_id bigint NOT NULL,
     team_id bigint NOT NULL,
@@ -51,53 +42,42 @@ CREATE TABLE team_members (
     updated_at timestamp NOT NULL,
     CONSTRAINT TEAM_MEMBERS_PK_1 PRIMARY KEY (member_id, team_id)
 );
-
-ALTER TABLE
-    team_members
-ADD
-    CONSTRAINT TEAM_MEMBERS_FK_1 FOREIGN KEY (member_id) REFERENCES users(user_id),
-ADD
-    CONSTRAINT TEAM_MEMBERS_FK_2 FOREIGN KEY (team_id) REFERENCES teams(team_id);
-
 CREATE TABLE http_monitors (
     "http_monitor_id" bigint NOT NULL,
     team_id bigint NOT NULL,
     status smallint NOT NULL,
     url varchar(255) NOT NULL,
-    "interval" integer NOT NULL,
-    retries smallint NOT NULL,
-    retry_interval smallint NOT NULL,
-    request_timeout smallint NOT NULL,
-    resend_notification smallint NOT NULL,
-    follow_redirections boolean NOT NULL,
-    max_redirects smallint NOT NULL,
-    check_ssl_error boolean NOT NULL,
-    ssl_expiry_reminders smallint NOT NULL,
-    domain_expiry_reminders smallint NOT NULL,
-    http_status_codes char(3) [] NOT NULL,
-    http_method smallint NOT NULL,
-    body_encoding smallint NULL,
-    request_body text NULL,
-    request_headers text NULL,
-    "group" bigint NULL,
-    notification bigint NULL,
-    proxy bigint NULL,
-    created_at timestamp NOT NULL,
-    updated_at timestamp NOT NULL,
-    CONSTRAINT HTTP_MONITORS__PK_1 PRIMARY KEY ("http_monitor_id")
+    SELECT *
+    FROM incidents
+    WHERE http_monitor_id = $1
+        AND incident_status = $2
+    ORDER BY incident_start DESC "interval" integer NOT NULL,
+        retries smallint NOT NULL,
+        retry_interval smallint NOT NULL,
+        request_timeout smallint NOT NULL,
+        resend_notification smallint NOT NULL,
+        follow_redirections boolean NOT NULL,
+        max_redirects smallint NOT NULL,
+        check_ssl_error boolean NOT NULL,
+        ssl_expiry_reminders smallint NOT NULL,
+        domain_expiry_reminders smallint NOT NULL,
+        http_status_codes char(3) [] NOT NULL,
+        http_method smallint NOT NULL,
+        body_encoding smallint NULL,
+        request_body text NULL,
+        request_headers text NULL,
+        "group" bigint NULL,
+        proxy bigint NULL,
+        send_to_oncall boolean NOT NULL,
+        created_at timestamp NOT NULL,
+        updated_at timestamp NOT NULL,
+        CONSTRAINT HTTP_MONITORS__PK_1 PRIMARY KEY ("http_monitor_id")
 );
-
-ALTER TABLE
-    http_monitors
-ADD
-    CONSTRAINT HTTP_MONITORS_FK_1 FOREIGN KEY (team_id) REFERENCES teams(team_id),
-ADD
-    CONSTRAINT HTTP_MONITORS_FK_2 FOREIGN KEY ("group") REFERENCES monitor_groups(group_id),
-ADD
-    CONSTRAINT HTTP_MONITORS_FK_3 FOREIGN KEY (notification) REFERENCES notifications(notification_id),
-ADD
-    CONSTRAINT HTTP_MONITORS_FK_4 FOREIGN KEY (proxy) REFERENCES proxies(proxy_id);
-
+CREATE TABLE http_monitor_notifications (
+    http_monitor_id bigint NOT NULL,
+    notification_id bigint NOT NULL,
+    CONSTRAINT HTTP_MONITOR_NOTIFICATIONS_PK PRIMARY KEY (http_monitor_id, notification_id)
+);
 CREATE TABLE monitor_groups (
     "monitor_group_id" bigint NOT NULL,
     team_id bigint NOT NULL,
@@ -106,26 +86,20 @@ CREATE TABLE monitor_groups (
     updated_at timestamp NOT NULL,
     CONSTRAINT MONITOR_GROUPS_PK_1 PRIMARY KEY ("monitor_group_id")
 );
-
-ALTER TABLE
-    monitor_groups
-ADD
-    CONSTRAINT MONITOR_GROUPS_FK_1 FOREIGN KEY (team_id) REFERENCES teams(team_id);
-
 CREATE TABLE notifications (
     notification_id bigint NOT NULL,
+    user_id bigint,
+    team_id bigint,
     notification_type smallint NOT NULL,
     notification_config jsonb NOT NULL,
-    created_at timestamp NOT NULL,
-    updated_at timestamp NOT NULL,
+    created_at timestamp NULL,
+    updated_at timestamp NULL,
     CONSTRAINT NOTIFICATION_PK_1 PRIMARY KEY (notification_id)
 );
-
 CREATE TABLE proxies (
     "proxy_id" bigint NOT NULL,
     CONSTRAINT PROXIES_PK_1 PRIMARY KEY ("proxy_id")
 );
-
 CREATE TABLE incidents (
     incident_id bigint NOT NULL,
     team_id bigint NOT NULL,
@@ -143,14 +117,6 @@ CREATE TABLE incidents (
     updated_at timestamp NOT NULL,
     CONSTRAINT INCIDENT_PK_1 PRIMARY KEY (incident_id)
 );
-
-ALTER TABLE
-    incidents
-ADD
-    CONSTRAINT INCIDENTS_FK_1 FOREIGN KEY (http_monitor_id) REFERENCES http_monitors(http_monitor_id),
-ADD
-    CONSTRAINT INCIDENTS_FK_2 FOREIGN KEY (team_id) REFERENCES teams(team_id);
-
 CREATE TABLE incident_timelines (
     incident_timeline_id bigint NOT NULL,
     incident_id bigint NOT NULL,
@@ -162,36 +128,28 @@ CREATE TABLE incident_timelines (
     updated_at timestamp NOT NULL,
     CONSTRAINT INCIDENT_TIMELINES_PK_1 PRIMARY KEY (incident_timeline_id, incident_id)
 );
-
-ALTER TABLE
-    incident_timelines
-ADD
-    CONSTRAINT INCIDENT_TIMELINES_FK_1 FOREIGN KEY (incident_id) REFERENCES incidents(incident_id),
-ADD
-    CONSTRAINT INCIDENT_TIMELINES_FK_2 FOREIGN KEY (server_id) REFERENCES server_locations(server_id),
-ADD
-    CONSTRAINT INCIDENT_TIMELINES_FK_3 FOREIGN KEY (created_by) REFERENCES users(user_id);
-
-CREATE TABLE http_monitor_long_history (
-    http_monitor_id bigint NOT NULL,
-    created_at timestamp NOT NULL,
-    ping smallint NOT NULL,
-    CONSTRAINT HTTP_MONITOR_LONG_HISTORY_PK_1 PRIMARY KEY (monitor_id, created_at)
-);
-
-ALTER TABLE
-    http_monitor_long_history
-ADD
-    CONSTRAINT HTTP_MONITOR_LONG_HISTORY_FK_1 FOREIGN KEY (monitor_id) REFERENCES http_monitors(http_monitor_id);
-
-CREATE TABLE http_monitor_short_history (
-    http_monitor_id bigint NOT NULL,
-    created_at timestamp NOT NULL,
-    ping smallint NOT NULL,
-    CONSTRAINT HTTP_MONITOR_SHORT_HISTORY_PK_1 PRIMARY KEY (monitor_id, created_at)
-);
-
-ALTER TABLE
-    http_monitor_short_history
-ADD
-    CONSTRAINT HTTP_MONITOR_SHORT_HISTORY_FK_1 FOREIGN KEY (monitor_id) REFERENCES http_monitors(http_monitor_id);
+ALTER TABLE sessions
+ADD CONSTRAINT SESSIONS_FK_1 FOREIGN KEY (user_id) REFERENCES users(user_id);
+ALTER TABLE team_members
+ADD CONSTRAINT TEAM_MEMBERS_FK_1 FOREIGN KEY (member_id) REFERENCES users(user_id),
+    ADD CONSTRAINT TEAM_MEMBERS_FK_2 FOREIGN KEY (team_id) REFERENCES teams(team_id);
+ALTER TABLE http_monitors
+ADD CONSTRAINT HTTP_MONITORS_FK_1 FOREIGN KEY (team_id) REFERENCES teams(team_id),
+    ADD CONSTRAINT HTTP_MONITORS_FK_2 FOREIGN KEY ("group") REFERENCES monitor_groups(group_id),
+    ADD CONSTRAINT HTTP_MONITORS_FK_3 FOREIGN KEY (notification) REFERENCES notifications(notification_id),
+    ADD CONSTRAINT HTTP_MONITORS_FK_4 FOREIGN KEY (proxy) REFERENCES proxies(proxy_id);
+ALTER TABLE http_monitor_notifications
+ADD CONSTRAINT FK_HTTP_MONITOR FOREIGN KEY (http_monitor_id) REFERENCES http_monitors (http_monitor_id),
+    ADD CONSTRAINT FK_NOTIFICATION FOREIGN KEY (notification_id) REFERENCES notifications (notification_id);
+ALTER TABLE monitor_groups
+ADD CONSTRAINT MONITOR_GROUPS_FK_1 FOREIGN KEY (team_id) REFERENCES teams(team_id);
+ALTER TABLE notifications
+ADD CONSTRAINT NOTIFICATION_FK_1 FOREIGN KEY (team_id) REFERENCES teams (team_id),
+    ADD CONSTRAINT NOTIFICATION_FK_2 FOREIGN KEY (user_id) REFERENCES users (user_id);
+ALTER TABLE incidents
+ADD CONSTRAINT INCIDENTS_FK_1 FOREIGN KEY (http_monitor_id) REFERENCES http_monitors(http_monitor_id),
+    ADD CONSTRAINT INCIDENTS_FK_2 FOREIGN KEY (team_id) REFERENCES teams(team_id);
+ALTER TABLE incident_timelines
+ADD CONSTRAINT INCIDENT_TIMELINES_FK_1 FOREIGN KEY (incident_id) REFERENCES incidents(incident_id),
+    ADD CONSTRAINT INCIDENT_TIMELINES_FK_2 FOREIGN KEY (server_id) REFERENCES server_locations(server_id),
+    ADD CONSTRAINT INCIDENT_TIMELINES_FK_3 FOREIGN KEY (created_by) REFERENCES users(user_id);

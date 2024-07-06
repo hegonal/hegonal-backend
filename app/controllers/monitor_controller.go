@@ -83,8 +83,8 @@ func CreateNewHttpMonitor(c *fiber.Ctx) error {
 	httpMonitor.RequestBody = createNewHttpMonitor.RequestBody
 	httpMonitor.RequestHeaders = createNewHttpMonitor.RequestHeaders
 	httpMonitor.Group = createNewHttpMonitor.Group
-	httpMonitor.Notification = createNewHttpMonitor.Notification
 	httpMonitor.Proxy = createNewHttpMonitor.Proxy
+	httpMonitor.SendToOnCall = createNewHttpMonitor.SendToOnCall
 	httpMonitor.CreatedAt = utils.TimeNow()
 	httpMonitor.UpdatedAt = utils.TimeNow()
 

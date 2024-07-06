@@ -12,13 +12,40 @@ type IncidentQueries struct {
 
 // CreateNewIncident creates a new incident in the database
 func (q *IncidentQueries) CreateNewIncident(incident *models.Incident) error {
-	query := `INSERT INTO incidents (
-		incident_id, team_id, http_monitor_id, expiry_date, confirm_location, recover_location,
-		http_status_code, incident_type, incident_status, incident_message, notifications,
-		incident_end, incident_start, updated_at
-	) VALUES (
-		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-	)`
+	query := `
+	INSERT INTO incidents (
+			incident_id,
+			team_id,
+			http_monitor_id,
+			expiry_date,
+			confirm_location,
+			recover_location,
+			http_status_code,
+			incident_type,
+			incident_status,
+			incident_message,
+			notifications,
+			incident_end,
+			incident_start,
+			updated_at
+		)
+	VALUES (
+			$1,
+			$2,
+			$3,
+			$4,
+			$5,
+			$6,
+			$7,
+			$8,
+			$9,
+			$10,
+			$11,
+			$12,
+			$13,
+			$14
+		)
+	`
 
 	_, err := q.Exec(
 		query,
@@ -36,14 +63,15 @@ func (q *IncidentQueries) CreateNewIncident(incident *models.Incident) error {
 // GetRecentIncident retrieves the most recent incident for a given http_monitor_id and incident_type
 func (q *IncidentQueries) GetRecentIncidentWithSpecifyTypeAndStatus(httpMonitorID string, incidentType models.IncidentType, incidentStatus models.IncidentStatus) (*models.Incident, error) {
 	var incident models.Incident
-	query := `SELECT
-		incident_id, team_id, http_monitor_id, expiry_date, confirm_location, recover_location,
-		http_status_code, incident_type, incident_status, incident_message, notifications,
-		incident_end, incident_start, updated_at
-		FROM incidents
-		WHERE http_monitor_id = $1 AND incident_type = $2 AND incident_status = $3
-		ORDER BY incident_start DESC
-		LIMIT 1`
+	query := `
+	SELECT *
+	FROM incidents
+	WHERE http_monitor_id = $1
+		AND incident_type = $2
+		AND incident_status = $3
+	ORDER BY incident_start DESC
+	LIMIT 1
+	`
 
 	err := q.Get(&incident, query, httpMonitorID, incidentType, incidentStatus)
 	if err != nil {
@@ -55,11 +83,23 @@ func (q *IncidentQueries) GetRecentIncidentWithSpecifyTypeAndStatus(httpMonitorI
 
 // UpdateIncident updates an existing incident in the database
 func (q *IncidentQueries) UpdateIncident(incident *models.Incident) error {
-	query := `UPDATE incidents SET
-		team_id = $1, http_monitor_id = $2, expiry_date = $3, confirm_location = $4, recover_location = $5,
-		http_status_code = $6, incident_type = $7, incident_status = $8, incident_message = $9,
-		notifications = $10, incident_end = $11, incident_start = $12, updated_at = $13
-		WHERE incident_id = $14`
+	query := `
+	UPDATE incidents
+	SET team_id = $1,
+		http_monitor_id = $2,
+		expiry_date = $3,
+		confirm_location = $4,
+		recover_location = $5,
+		http_status_code = $6,
+		incident_type = $7,
+		incident_status = $8,
+		incident_message = $9,
+		notifications = $10,
+		incident_end = $11,
+		incident_start = $12,
+		updated_at = $13
+	WHERE incident_id = $14
+	`
 
 	_, err := q.Exec(
 		query,
@@ -77,9 +117,12 @@ func (q *IncidentQueries) UpdateIncident(incident *models.Incident) error {
 
 // UpdateConfirmLocation updates the ConfirmLocation of an incident in the database
 func (q *IncidentQueries) UpdateIncidentConfirmLocation(incidentID string, confirmLocation pq.StringArray) error {
-	query := `UPDATE incidents
-			  SET confirm_location = $1, updated_at = NOW()
-			  WHERE incident_id = $2`
+	query := `
+	UPDATE incidents
+	SET confirm_location = $1,
+		updated_at = NOW()
+	WHERE incident_id = $2
+	`
 
 	_, err := q.Exec(query, confirmLocation, incidentID)
 	if err != nil {
@@ -92,13 +135,13 @@ func (q *IncidentQueries) UpdateIncidentConfirmLocation(incidentID string, confi
 // GetRecentIncidents retrieves the most recent incidents for a given http_monitor_id and multiple incident_types
 func (q *IncidentQueries) GetRecentUnsloveIncidents(httpMonitorID string, incidentStatus models.IncidentStatus) ([]models.Incident, error) {
 	var incidents []models.Incident
-	query := `SELECT
-		incident_id, team_id, http_monitor_id, expiry_date, confirm_location, recover_location,
-		http_status_code, incident_type, incident_status, incident_message, notifications,
-		incident_end, incident_start, updated_at
-		FROM incidents
-		WHERE http_monitor_id = $1 AND incident_status = $2
-		ORDER BY incident_start DESC`
+	query := `
+	SELECT *
+	FROM incidents
+	WHERE http_monitor_id = $1
+		AND incident_status = $2
+	ORDER BY incident_start DESC
+	`
 
 	err := q.Select(&incidents, query, httpMonitorID, incidentStatus)
 	if err != nil {
@@ -111,11 +154,18 @@ func (q *IncidentQueries) GetRecentUnsloveIncidents(httpMonitorID string, incide
 // CreateNewIncidentTimeline creates a new incident timeline entry in the database
 func (q *IncidentQueries) CreateNewIncidentTimeline(incidentTimeline models.IncidentTimeline) error {
 	query := `
-		INSERT INTO incident_timelines (
-			incident_timeline_id, incident_id, status_type, message, created_by, server_id, created_at, updated_at
-		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8
-		)`
+	INSERT INTO incident_timelines (
+			incident_timeline_id,
+			incident_id,
+			status_type,
+			message,
+			created_by,
+			server_id,
+			created_at,
+			updated_at
+		)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	`
 
 	_, err := q.Exec(
 		query,

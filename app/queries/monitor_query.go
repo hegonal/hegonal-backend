@@ -1,7 +1,6 @@
 package queries
 
 import (
-
 	"github.com/hegonal/hegonal-backend/app/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -12,14 +11,58 @@ type MonitorQueries struct {
 
 func (q *MonitorQueries) CreateNewHttpMonitor(httpMonitor *models.HttpMonitor) error {
 	query := `
-		INSERT INTO http_monitors (http_monitor_id, team_id, status, url, interval, retries, retry_interval,
-			request_timeout, resend_notification, follow_redirections, max_redirects, check_ssl_error,
-			ssl_expiry_reminders, domain_expiry_reminders, http_status_codes, http_method, body_encoding,
-			request_body, request_headers, "group", notification, proxy, created_at, updated_at)
-		VALUES (:http_monitor_id, :team_id, :status, :url, :interval, :retries, :retry_interval,
-			:request_timeout, :resend_notification, :follow_redirections, :max_redirects, :check_ssl_error,
-			:ssl_expiry_reminders, :domain_expiry_reminders, :http_status_codes, :http_method, :body_encoding,
-			:request_body, :request_headers, :group, :notification, :proxy, :created_at, :updated_at)
+	INSERT INTO http_monitors (
+			http_monitor_id,
+			team_id,
+			status,
+			url,
+			interval,
+			retries,
+			retry_interval,
+			request_timeout,
+			resend_notification,
+			follow_redirections,
+			max_redirects,
+			check_ssl_error,
+			ssl_expiry_reminders,
+			domain_expiry_reminders,
+			http_status_codes,
+			http_method,
+			body_encoding,
+			request_body,
+			request_headers,
+			"group",
+			proxy,
+			send_to_oncall,
+			created_at,
+			updated_at
+		)
+	VALUES (
+			:http_monitor_id,
+			:team_id,
+			:status,
+			:url,
+			:interval,
+			:retries,
+			:retry_interval,
+			:request_timeout,
+			:resend_notification,
+			:follow_redirections,
+			:max_redirects,
+			:check_ssl_error,
+			:ssl_expiry_reminders,
+			:domain_expiry_reminders,
+			:http_status_codes,
+			:http_method,
+			:body_encoding,
+			:request_body,
+			:request_headers,
+			:group,
+			:proxy,
+			:send_to_oncall,
+			:created_at,
+			:updated_at
+		)
 	`
 
 	_, err := q.DB.NamedExec(query, httpMonitor)
@@ -32,12 +75,7 @@ func (q *MonitorQueries) CreateNewHttpMonitor(httpMonitor *models.HttpMonitor) e
 
 func (q *MonitorQueries) GetHttpMonitorByID(httpMonitorID string) (*models.HttpMonitor, error) {
 	query := `
-		SELECT http_monitor_id, team_id, status, url, interval, retries, retry_interval,
-			request_timeout, resend_notification, follow_redirections, max_redirects, check_ssl_error,
-			ssl_expiry_reminders, domain_expiry_reminders, http_status_codes, http_method, body_encoding,
-			request_body, request_headers, "group", notification, proxy, created_at, updated_at
-		FROM http_monitors
-		WHERE http_monitor_id = $1
+		SELECT * FROM http_monitors WHERE http_monitor_id = $1
 	`
 
 	var httpMonitor models.HttpMonitor

@@ -10,7 +10,10 @@ type ServerQueries struct {
 }
 
 func (q *ServerQueries) CreateNewServerLocation(serverLocation *models.ServerLocation) error {
-	query := `INSERT INTO server_locations (server_id, server_display_name, country) VALUES ($1, $2, $3)`
+	query := `
+	INSERT INTO server_locations (server_id, server_display_name, country)
+	VALUES ($1, $2, $3)
+	`
 
 	_, err := q.Exec(
 		query,
@@ -25,7 +28,13 @@ func (q *ServerQueries) CreateNewServerLocation(serverLocation *models.ServerLoc
 
 func (q *ServerQueries) ServerLocationExists(serverID string) (bool, error) {
 	var exists bool
-	query := `SELECT EXISTS (SELECT 1 FROM server_locations WHERE server_id = $1)`
+	query := `
+	SELECT EXISTS (
+        SELECT 1
+        FROM server_locations
+        WHERE server_id = $1
+    )	
+	`
 
 	err := q.Get(&exists, query, serverID)
 	if err != nil {
@@ -37,7 +46,13 @@ func (q *ServerQueries) ServerLocationExists(serverID string) (bool, error) {
 
 func (q *ServerQueries) GetServerLocation(serverID string) (*models.ServerLocation, error) {
 	var serverLocation models.ServerLocation
-	query := `SELECT server_id, server_display_name, country FROM server_locations WHERE server_id = $1`
+	query := `
+	SELECT server_id,
+		server_display_name,
+		country
+	FROM server_locations
+	WHERE server_id = $1
+	`
 
 	err := q.Get(&serverLocation, query, serverID)
 	if err != nil {

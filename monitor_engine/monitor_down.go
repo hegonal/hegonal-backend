@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/hegonal/hegonal-backend/app/models"
+	notificationhandler "github.com/hegonal/hegonal-backend/pkg/notification_handler"
 	"github.com/hegonal/hegonal-backend/pkg/utils"
 	"github.com/hegonal/hegonal-backend/platform/database"
 )
@@ -49,11 +50,35 @@ func incidentHandler(httpMonitor models.HttpMonitor, errorType models.IncidentTy
 	newIncident.IncidentStart = utils.TimeNow()
 	newIncident.UpdatedAt = utils.TimeNow()
 
-
-	checkOrUpdateIncident(newIncident, &httpMonitor, db, errorType)
+	NeedSendNotifications := checkOrUpdateIncident(newIncident, &httpMonitor, db, errorType)
+	if NeedSendNotifications {
+		sendNotifications(*newIncident, httpMonitor,db)
+	}
 }
 
-func checkOrUpdateIncident(newIncident *models.Incident, httpMonitor *models.HttpMonitor, db *database.Queries, errorType models.IncidentType) {
+func sendNotifications(incident models.Incident,httpMonitor models.HttpMonitor, db *database.Queries) {
+	httpMonitorNotifications,err := db.GetHttpMonitorNotifications(httpMonitor.HttpMonitorID) 
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	notificationIDArray := []string{}
+	for _, notifications := range httpMonitorNotifications {
+		notificationIDArray = append(notificationIDArray, notifications.NotificationID)
+	}
+	notifications, err:= db.GetAllMatchIDNotifications(notificationIDArray)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	for _, notification := range notifications {
+		notificationhandler.SendNotification(httpMonitor, incident,notification)
+	}
+}
+
+func checkOrUpdateIncident(newIncident *models.Incident, httpMonitor *models.HttpMonitor, db *database.Queries, errorType models.IncidentType) (sendNotification bool) {
 	newIncident.IncidentStatus = models.IncidentStatusOnGoing
 
 	newIncidentTimeline := models.IncidentTimeline{
@@ -71,32 +96,38 @@ func checkOrUpdateIncident(newIncident *models.Incident, httpMonitor *models.Htt
 		err = db.CreateNewIncident(newIncident)
 		if err != nil {
 			log.Error(err)
-			return
+			return false
 		}
 		newIncidentTimeline.IncidentID = newIncident.IncidentID
 		err = db.CreateNewIncidentTimeline(newIncidentTimeline)
 		if err != nil {
 			log.Error(err)
+			return false
 		}
-		return
+		return true
 	} else if err != nil {
 		log.Error(err)
-		return
+		return false
 	}
 
 	if utils.StringContains(incident.ConfirmLocation, ServerID) {
-		return
+		return false
 	}
 
 	incident.ConfirmLocation = append(incident.ConfirmLocation, ServerID)
 	err = db.UpdateIncidentConfirmLocation(incident.IncidentID, incident.ConfirmLocation)
 	if err != nil {
 		log.Error(err)
-		return
+		return false
 	}
 	newIncidentTimeline.IncidentID = incident.IncidentID
 	err = db.CreateNewIncidentTimeline(newIncidentTimeline)
 	if err != nil {
 		log.Error(err)
+		return true
 	}
+	if incident.Notifications {
+		return false
+	}
+	return true
 }
