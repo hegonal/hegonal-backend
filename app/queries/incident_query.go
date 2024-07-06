@@ -34,18 +34,18 @@ func (q *IncidentQueries) CreateNewIncident(incident *models.Incident) error {
 }
 
 // GetRecentIncident retrieves the most recent incident for a given http_monitor_id and incident_type
-func (q *IncidentQueries) GetRecentIncident(httpMonitorID string, incidentType models.IncidentType) (*models.Incident, error) {
+func (q *IncidentQueries) GetRecentIncidentWithSpecifyTypeAndStatus(httpMonitorID string, incidentType models.IncidentType, incidentStatus models.IncidentStatus) (*models.Incident, error) {
 	var incident models.Incident
 	query := `SELECT
 		incident_id, team_id, http_monitor_id, expiry_date, confirm_location, recover_location,
 		http_status_code, incident_type, incident_status, incident_message, notifications,
 		incident_end, incident_start, updated_at
 		FROM incidents
-		WHERE http_monitor_id = $1 AND incident_type = $2
+		WHERE http_monitor_id = $1 AND incident_type = $2 AND incident_status = $3
 		ORDER BY incident_start DESC
 		LIMIT 1`
 
-	err := q.Get(&incident, query, httpMonitorID, incidentType)
+	err := q.Get(&incident, query, httpMonitorID, incidentType, incidentStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -106,4 +106,25 @@ func (q *IncidentQueries) GetRecentUnsloveIncidents(httpMonitorID string, incide
 	}
 
 	return incidents, nil
+}
+
+// CreateNewIncidentTimeline creates a new incident timeline entry in the database
+func (q *IncidentQueries) CreateNewIncidentTimeline(incidentTimeline models.IncidentTimeline) error {
+	query := `
+		INSERT INTO incident_timelines (
+			incident_timeline_id, incident_id, status_type, message, created_by, server_id, created_at, updated_at
+		) VALUES (
+			$1, $2, $3, $4, $5, $6, $7, $8
+		)`
+
+	_, err := q.Exec(
+		query,
+		incidentTimeline.IncidentTimelineID, incidentTimeline.IncidentID, incidentTimeline.StatusType, incidentTimeline.Message,
+		incidentTimeline.CreatedBy, incidentTimeline.ServerID, incidentTimeline.CreatedAt, incidentTimeline.UpdatedAt,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -116,23 +116,7 @@ func UserSignUp(c *fiber.Ctx) error {
 		})
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:     "session",
-		Value:    session.Session,
-		Expires:  utils.TimeNow().Add(24 * time.Hour),
-		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Lax",
-	})
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "userID",
-		Value:    user.UserID,
-		Expires:  utils.TimeNow().Add(24 * time.Hour * 365),
-		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Lax",
-	})
+	setSessionCookie(c, user.UserID, session.Session)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"error": false,
@@ -220,23 +204,7 @@ func UserLogin(c *fiber.Ctx) error {
 		})
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:     "session",
-		Value:    session.Session,
-		Expires:  utils.TimeNow().Add(24 * time.Hour),
-		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Lax",
-	})
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "userID",
-		Value:    user.UserID,
-		Expires:  utils.TimeNow().Add(24 * time.Hour * 365),
-		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Lax",
-	})
+	setSessionCookie(c, user.UserID, session.Session)
 
 	return c.JSON(fiber.Map{
 		"error": false,
@@ -275,5 +243,25 @@ func UserLogout(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"error": false,
 		"msg":   "Logout successful",
+	})
+}
+
+func setSessionCookie(c *fiber.Ctx,userID, session string) {
+	c.Cookie(&fiber.Cookie{
+		Name:     "session",
+		Value:    session,
+		Expires:  utils.TimeNow().Add(24 * time.Hour),
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "Lax",
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "userID",
+		Value:    userID,
+		Expires:  utils.TimeNow().Add(24 * time.Hour * 365),
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "Lax",
 	})
 }

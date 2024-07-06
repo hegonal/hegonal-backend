@@ -2,8 +2,8 @@ package monitorengine
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,8 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/hegonal/hegonal-backend/app/models"
-	"github.com/likexian/whois"
-	whoisparser "github.com/likexian/whois-parser"
+	"github.com/shlin168/go-whois/whois"
 )
 
 // Start http monitor through goroutine
@@ -137,16 +136,7 @@ func handleHttpError(err error) (errorType models.IncidentType, resultError erro
 		return models.IncidentTypeTimeout, err
 	}
 
-	switch e := err.(type) {
-	case *url.Error:
-		if x509Err, ok := e.Err.(x509.UnknownAuthorityError); ok {
-			return models.IncidentTypeSSLError, x509Err
-		} else {
-			return models.IncidentTypeOtherError, err
-		}
-	default:
-		return models.IncidentTypeOtherError, err
-	}
+	return models.IncidentTypeOtherError, err
 }
 
 // Check status code is match config
@@ -196,22 +186,24 @@ func checkDomainExpiry(httpMonitor models.HttpMonitor) (errorType models.Inciden
 
 	domain := u.Hostname()
 
-	whoisRaw, err := whois.Whois(domain)
+	ctx := context.Background()
+	client, err := whois.NewClient(whois.WithTimeout(time.Duration(httpMonitor.RequestTimeout) * time.Second))
 	if err != nil {
 		log.Error(err)
-		return models.IncidentTypeFine, 0, nil
+		return models.IncidentTypeDomainExpiry, 0, fmt.Errorf("error get this domain's information")
 	}
 
-	result, err := whoisparser.Parse(whoisRaw)
+	whoisDomain, err := client.Query(ctx, domain)
 	if err != nil {
 		log.Error(err)
-		return models.IncidentTypeFine, 0, nil
+		return models.IncidentTypeDomainExpiry, 0, fmt.Errorf("error get this domain's information")
 	}
 
-	expirationDate, err := time.Parse(time.RFC3339, result.Domain.ExpirationDate)
+	expirationDate, err := time.Parse(time.RFC3339, whoisDomain.ParsedWhois.ExpiredDate)
+
 	if err != nil {
 		log.Error(err)
-		return models.IncidentTypeFine, 0, nil
+		return models.IncidentTypeDomainExpiry, 0, fmt.Errorf("error get this domain's information")
 	}
 
 	daysLeft = int(time.Until(expirationDate).Hours() / 24)

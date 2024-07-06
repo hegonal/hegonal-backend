@@ -10,7 +10,6 @@ type IncidentType int
 
 const (
 	IncidentTypeFine IncidentType = iota
-	IncidentTypeSSLError
 	IncidentTypeSSLExpiry
 	IncidentTypeDomainExpiry
 	IncidentTypeKeyWordNotFound
@@ -22,7 +21,7 @@ const (
 type IncidentStatus int
 
 const (
-	IncidentStatusSlove IncidentStatus = iota
+	IncidentStatusReslove IncidentStatus = iota
 	IncidentStatusOnGoing
 )
 
@@ -43,11 +42,25 @@ type Incident struct {
 	UpdatedAt       time.Time      `db:"updated_at" json:"updated_at" validate:"required"`
 }
 
-type IncidentTimeLine struct {
-	IncidentTimelineID int64     `db:"incident_timeline_id" json:"incident_timeline_id" validate:"required,max=20"`
-	IncidentID         int64     `db:"incident_id" json:"incident_id" validate:"required,max=20"`
-	StatusType         int16     `db:"status_type" json:"status_type"`
+type IncidentTimelineType int
+
+const (
+	IncidentTimelineTypeConfirm IncidentTimelineType = iota
+	IncidentTimelineTypeRecover
+	IncidentTimelineTypeSendNotification
+	IncidentTImelineTypeInvestigating
+	IncidentTImelineTypeIdentified
+	IncidentTImelineTypeUpdate
+	IncidentTimelineTypeResolve
+)
+
+type IncidentTimeline struct {
+	IncidentTimelineID string    `db:"incident_timeline_id" json:"incident_timeline_id" validate:"required,max=20"`
+	IncidentID         string    `db:"incident_id" json:"incident_id" validate:"required,max=20"`
+	StatusType         IncidentTimelineType       `db:"status_type" json:"status_type"`
 	Message            string    `db:"message" json:"message"`
-	ServerID           string    `db:"server_id" json:"server_id"`
+	CreatedBy          *string   `db:"created_by" json:"created_by"`
+	ServerID           *string   `db:"server_id" json:"server_id"`
 	CreatedAt          time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt          time.Time `db:"updated_at" json:"update_at"`
 }

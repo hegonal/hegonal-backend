@@ -12,6 +12,7 @@ type Queries struct {
 	*queries.MonitorQueries
 	*queries.ServerQueries
 	*queries.IncidentQueries
+	*queries.NotificationQueries
 }
 
 func OpenDBConnection() (*Queries, error) {
@@ -27,11 +28,12 @@ func OpenDBConnection() (*Queries, error) {
 	}
 
 	return &Queries{
-		UserQueries:     &queries.UserQueries{DB: db},
-		SessionQueries:  &queries.SessionQueries{DB: db},
-		TeamQueries:     &queries.TeamQueries{DB: db},
-		MonitorQueries:  &queries.MonitorQueries{DB: db},
-		ServerQueries:   &queries.ServerQueries{DB: db},
-		IncidentQueries: &queries.IncidentQueries{DB: db},
+		UserQueries:         &queries.UserQueries{DB: db},
+		SessionQueries:      &queries.SessionQueries{DB: db},
+		TeamQueries:         &queries.TeamQueries{DB: db},
+		MonitorQueries:      &queries.MonitorQueries{DB: db},
+		ServerQueries:       &queries.ServerQueries{DB: db},
+		IncidentQueries:     &queries.IncidentQueries{DB: db},
+		NotificationQueries: &queries.NotificationQueries{DB: db},
 	}, nil
 }

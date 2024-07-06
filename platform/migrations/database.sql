@@ -113,8 +113,12 @@ ADD
     CONSTRAINT MONITOR_GROUPS_FK_1 FOREIGN KEY (team_id) REFERENCES teams(team_id);
 
 CREATE TABLE notifications (
-    "notification_id" bigint NOT NULL,
-    CONSTRAINT NOTIFICATIONS_PK_1 PRIMARY KEY ("notification_id")
+    notification_id bigint NOT NULL,
+    notification_type smallint NOT NULL,
+    notification_config jsonb NOT NULL,
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL,
+    CONSTRAINT NOTIFICATION_PK_1 PRIMARY KEY (notification_id)
 );
 
 CREATE TABLE proxies (
@@ -152,8 +156,10 @@ CREATE TABLE incident_timelines (
     incident_id bigint NOT NULL,
     status_type smallint NOT NULL,
     message text NOT NULL,
+    created_by bigint,
+    server_id varchar(32),
     created_at timestamp NOT NULL,
-    server_id varchar(32) NOT NULL,
+    updated_at timestamp NOT NULL,
     CONSTRAINT INCIDENT_TIMELINES_PK_1 PRIMARY KEY (incident_timeline_id, incident_id)
 );
 
@@ -162,7 +168,9 @@ ALTER TABLE
 ADD
     CONSTRAINT INCIDENT_TIMELINES_FK_1 FOREIGN KEY (incident_id) REFERENCES incidents(incident_id),
 ADD
-    CONSTRAINT INCIDENT_TIMELINES_FK_2 FOREIGN KEY (server_id) REFERENCES server_locations(server_id);
+    CONSTRAINT INCIDENT_TIMELINES_FK_2 FOREIGN KEY (server_id) REFERENCES server_locations(server_id),
+ADD
+    CONSTRAINT INCIDENT_TIMELINES_FK_3 FOREIGN KEY (created_by) REFERENCES users(user_id);
 
 CREATE TABLE http_monitor_long_history (
     http_monitor_id bigint NOT NULL,

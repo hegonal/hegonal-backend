@@ -25,29 +25,52 @@ func SloveIncidentHandler(httpMonitor models.HttpMonitor) {
 		return
 	}
 
+	// check all ongoing incident and update it if reslove
 	for _, incident := range incidents {
 		if !utils.StringContains(incident.ConfirmLocation, ServerID) {
-			return
+			continue
+		}
+
+		newIncidentTimeline := models.IncidentTimeline{
+			IncidentTimelineID: utils.GenerateId(),
+			IncidentID:         incident.IncidentID,
+			StatusType:         models.IncidentTimelineTypeRecover,
+			Message:            "Monitor recover.",
+			ServerID:           &ServerID,
+			CreatedAt:          utils.TimeNow(),
+			UpdatedAt:          utils.TimeNow(),
+		}
+
+		if err := db.CreateNewIncidentTimeline(newIncidentTimeline); err != nil {
+			log.Error(err)
+			continue
 		}
 
 		incident.RecoverLocation = append(incident.RecoverLocation, ServerID)
 		if utils.UnorderedEqual(incident.RecoverLocation, incident.ConfirmLocation) {
 			timeNow := utils.TimeNow()
 			incident.IncidentEnd = &timeNow
-			incident.IncidentStatus = models.IncidentStatusSlove
+			incident.IncidentStatus = models.IncidentStatusReslove
 			incident.UpdatedAt = timeNow
-			err := db.UpdateIncident(&incident)
-			if err != nil {
+			if err := db.UpdateIncident(&incident); err != nil {
 				log.Error(err)
-				return
+				continue
+			}
+
+			newIncidentTimeline.IncidentTimelineID = utils.GenerateId()
+			newIncidentTimeline.Message = "Resolve this incident"
+			newIncidentTimeline.StatusType = models.IncidentTimelineTypeResolve
+			newIncidentTimeline.ServerID = nil
+			if err := db.CreateNewIncidentTimeline(newIncidentTimeline); err != nil {
+				log.Error(err)
+				continue
+			}
+		} else {
+			incident.UpdatedAt = utils.TimeNow()
+			if err := db.UpdateIncident(&incident); err != nil {
+				log.Error(err)
+				continue
 			}
 		}
-		incident.UpdatedAt = utils.TimeNow()
-		err := db.UpdateIncident(&incident)
-		if err != nil {
-			log.Error(err)
-			return
-		}
 	}
-
 }

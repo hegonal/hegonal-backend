@@ -2,6 +2,7 @@ package monitorengine
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2/log"
@@ -17,7 +18,6 @@ func incidentHandler(httpMonitor models.HttpMonitor, errorType models.IncidentTy
 		log.Error(err)
 		return
 	}
-
 	var newIncident = &models.Incident{}
 
 	newIncident.IncidentID = utils.GenerateId()
@@ -28,7 +28,7 @@ func incidentHandler(httpMonitor models.HttpMonitor, errorType models.IncidentTy
 		newIncident.HttpStatusCode = nil
 	} else {
 		httpStatusCodePointer := new(string)
-		*httpStatusCodePointer = string(httpCode)
+		*httpStatusCodePointer = strconv.Itoa(httpCode)
 		newIncident.HttpStatusCode = httpStatusCodePointer
 	}
 	if expiry == 0 {
@@ -48,19 +48,35 @@ func incidentHandler(httpMonitor models.HttpMonitor, errorType models.IncidentTy
 	newIncident.IncidentEnd = nil
 	newIncident.IncidentStart = utils.TimeNow()
 	newIncident.UpdatedAt = utils.TimeNow()
-	
+
+
 	checkOrUpdateIncident(newIncident, &httpMonitor, db, errorType)
 }
 
 func checkOrUpdateIncident(newIncident *models.Incident, httpMonitor *models.HttpMonitor, db *database.Queries, errorType models.IncidentType) {
 	newIncident.IncidentStatus = models.IncidentStatusOnGoing
 
-	incident, err := db.GetRecentIncident(httpMonitor.HttpMonitorID, errorType)
+	newIncidentTimeline := models.IncidentTimeline{
+		IncidentTimelineID: utils.GenerateId(),
+		IncidentID:         newIncident.IncidentID,
+		StatusType:         models.IncidentTimelineTypeConfirm,
+		Message:            "Confirm this error.",
+		ServerID:           &ServerID,
+		CreatedAt:          utils.TimeNow(),
+		UpdatedAt:          utils.TimeNow(),
+	}
+
+	incident, err := db.GetRecentIncidentWithSpecifyTypeAndStatus(httpMonitor.HttpMonitorID, errorType, models.IncidentStatusOnGoing)
 	if err == sql.ErrNoRows {
-		err := db.CreateNewIncident(newIncident)
+		err = db.CreateNewIncident(newIncident)
 		if err != nil {
 			log.Error(err)
 			return
+		}
+		newIncidentTimeline.IncidentID = newIncident.IncidentID
+		err = db.CreateNewIncidentTimeline(newIncidentTimeline)
+		if err != nil {
+			log.Error(err)
 		}
 		return
 	} else if err != nil {
@@ -68,24 +84,19 @@ func checkOrUpdateIncident(newIncident *models.Incident, httpMonitor *models.Htt
 		return
 	}
 
-	if incident.IncidentStatus != models.IncidentStatusOnGoing {
-		err := db.CreateNewIncident(newIncident)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		return
-	}
-
 	if utils.StringContains(incident.ConfirmLocation, ServerID) {
 		return
-	} else {
-		incident.ConfirmLocation = append(incident.ConfirmLocation, ServerID)
-		err := db.UpdateIncidentConfirmLocation(incident.IncidentID, incident.ConfirmLocation)
-		if err != nil {
-			log.Error(err)
-			return
-		}
+	}
+
+	incident.ConfirmLocation = append(incident.ConfirmLocation, ServerID)
+	err = db.UpdateIncidentConfirmLocation(incident.IncidentID, incident.ConfirmLocation)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	newIncidentTimeline.IncidentID = incident.IncidentID
+	err = db.CreateNewIncidentTimeline(newIncidentTimeline)
+	if err != nil {
+		log.Error(err)
 	}
 }
-

@@ -37,6 +37,7 @@ func main() {
 
 	routes.AuthRoutes(route)
 	routes.TeamRoutes(route)
+	routes.NotificationRoutes(route)
 	routes.MonitorRoutes(route)
 
 	routes.NotFoundRoute(route)
