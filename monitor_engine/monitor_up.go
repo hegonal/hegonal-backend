@@ -8,7 +8,7 @@ import (
 )
 
 // If incident up check is there have any incident need to be slove
-func SloveIncidentHandler(httpMonitor models.HttpMonitor) {
+func SloveIncidentHandler(httpMonitor models.HttpMonitor, ping int) {
 	db, err := database.OpenDBConnection()
 	if err != nil {
 		log.Error(err)
@@ -21,12 +21,25 @@ func SloveIncidentHandler(httpMonitor models.HttpMonitor) {
 		return
 	}
 
-	if len(incidents) == 0 {
+	// check all ongoing incident and update it if reslove
+	IncidentCheckIfReslove(db, incidents, httpMonitor)
+
+	// Create new ping data
+	pingData := models.PingData{
+		Time:          utils.TimeNow(),
+		HttpMonitorID: httpMonitor.HttpMonitorID,
+		Ping:          ping,
+		ServerID:      ServerID,
+	}
+	err = db.CreatePingData(&pingData)
+	if err != nil {
+		log.Error(err)
 		return
 	}
 
-	// check all ongoing incident and update it if reslove
-	IncidentCheckIfReslove(db, incidents, httpMonitor)
+	if len(incidents) == 0 {
+		return
+	}
 }
 
 func IncidentCheckIfReslove(db *database.Queries, incidents []models.Incident, httpMonitor models.HttpMonitor) {

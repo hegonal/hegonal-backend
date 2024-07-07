@@ -13,6 +13,7 @@ type Queries struct {
 	*queries.ServerQueries
 	*queries.IncidentQueries
 	*queries.NotificationQueries
+	*queries.PingDataQueries
 }
 
 func OpenDBConnection() (*Queries, error) {
@@ -35,5 +36,6 @@ func OpenDBConnection() (*Queries, error) {
 		ServerQueries:       &queries.ServerQueries{DB: db},
 		IncidentQueries:     &queries.IncidentQueries{DB: db},
 		NotificationQueries: &queries.NotificationQueries{DB: db},
+		PingDataQueries:     &queries.PingDataQueries{DB: db},
 	}, nil
 }

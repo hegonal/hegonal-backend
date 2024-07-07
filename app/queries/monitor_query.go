@@ -98,5 +98,5 @@ func (q *MonitorQueries) GetAllHttpMonitors() ([]models.HttpMonitor, error) {
 		return nil, err
 	}
 
-	return httpMonitors, nil
+return httpMonitors, nil
 }

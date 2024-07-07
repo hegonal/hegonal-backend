@@ -67,8 +67,7 @@ func checkHttpStatus(httpMonitor models.HttpMonitor) {
 		incidentHandler(httpMonitor, errorType, expiryDays, 0, err)
 		return
 	}
-	log.Info(ping)
-	SloveIncidentHandler(httpMonitor)
+	SloveIncidentHandler(httpMonitor, int(ping))
 }
 
 // Build request config to request
