@@ -248,7 +248,7 @@ func AccpetInvite(c *fiber.Ctx) error {
 	if err := db.DeleteTeamInviteByID(invitedID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
-			"msg": err.Error(),
+			"msg":   err.Error(),
 		})
 	}
 
@@ -278,8 +278,9 @@ func GetAllTeamMembers(c *fiber.Ctx) error {
 		log.Error(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": true,
-			"msg": err.Error(),
-		})	}
+			"msg":   err.Error(),
+		})
+	}
 
 	if len(teamMembers) == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -287,13 +288,13 @@ func GetAllTeamMembers(c *fiber.Ctx) error {
 			"msg":   "This team is not exist.",
 		})
 	}
-	
+
 	userIsTeamMember := false
 
 	for _, teamMember := range teamMembers {
 		if teamMember.MemberID == userID {
 			userIsTeamMember = true
-		} 
+		}
 	}
 
 	if !userIsTeamMember {
@@ -304,9 +305,8 @@ func GetAllTeamMembers(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"error":       false,
-		"msg":         nil,
+		"error":        false,
+		"msg":          nil,
 		"team_members": teamMembers,
 	})
 }
-

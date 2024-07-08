@@ -100,3 +100,33 @@ func (q *MonitorQueries) GetAllHttpMonitors() ([]models.HttpMonitor, error) {
 
 return httpMonitors, nil
 }
+
+func (q *MonitorQueries) GetAllTeamHttpMonitors(teamID string) ([]models.HttpMonitor, error) {
+	query := `
+	SELECT *
+	FROM http_monitors
+	WHERE team_id = $1;
+	`
+
+	var httpMonitors []models.HttpMonitor
+	err := q.Select(&httpMonitors, query, teamID)
+	if err != nil {
+		return nil, err
+	}
+
+	return httpMonitors, nil
+}
+
+func (q *MonitorQueries) DeleteHttpMonitor(httpMonitorID string) error {
+	query := `
+	DELETE FROM http_monitors
+	WHERE http_monitor_id = $1;
+	`
+
+	_, err := q.Exec(query, httpMonitorID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

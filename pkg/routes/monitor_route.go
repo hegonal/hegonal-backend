@@ -7,7 +7,10 @@ import (
 )
 
 func MonitorRoutes(a fiber.Router) {
-	authGroup := a.Group("/monitor")
+	monitorGroup := a.Group("/monitor")
 
-	authGroup.Post("/http/add", middleware.SessionValidationMiddleware, controllers.CreateNewHttpMonitor)
+	monitorGroup.Post("/http/add", middleware.SessionValidationMiddleware, controllers.CreateNewHttpMonitor)
+	
+	monitorGroup.Get("/http/get/:teamID", middleware.SessionValidationMiddleware, controllers.GetAllHttpMonitors)
+	monitorGroup.Delete("/http/delete/:teamID/:monitorID", middleware.SessionValidationMiddleware, controllers.DeleteHttpMonitor)
 }

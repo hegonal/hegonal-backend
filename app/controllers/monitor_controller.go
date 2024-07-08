@@ -109,3 +109,97 @@ func CreateNewHttpMonitor(c *fiber.Ctx) error {
 		"http_monitor": httpMonitor,
 	})
 }
+
+func GetAllHttpMonitors(c *fiber.Ctx) error {
+	teamID := c.Params("teamID")
+
+	userID := c.Cookies("userID")
+
+	db, ok := c.Locals("db").(*database.Queries)
+	if !ok {
+		log.Error("Failed to retrieve DB from context")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Failed to retrieve DB from context",
+		})
+	}
+
+	_, err := db.GetTeamMember(userID, teamID)
+	if err == sql.ErrNoRows {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Unauthorized",
+		})
+	}else if err != nil {
+		log.Error(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+
+	httpMonitors, err := db.GetAllTeamHttpMonitors(teamID)
+
+	if err != nil {
+		log.Error(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":        false,
+		"msg":          nil,
+		"http_monitors": httpMonitors,
+	})
+}
+
+func DeleteHttpMonitor(c *fiber.Ctx) error {
+	teamID := c.Params("teamID")
+	monitorID := c.Params("monitorID")
+
+	userID := c.Cookies("userID")
+
+	db, ok := c.Locals("db").(*database.Queries)
+	if !ok {
+		log.Error("Failed to retrieve DB from context")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Failed to retrieve DB from context",
+		})
+	}
+
+	teamMember, err := db.GetTeamMember(userID, teamID)
+	if err == sql.ErrNoRows {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Unauthorized",
+		})
+	}else if err != nil {
+		log.Error(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+
+	if teamMember.Role < models.TeamAdmin {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Unauthorized",
+		})
+	}
+
+	err = db.DeleteHttpMonitor(monitorID)
+
+	if err != nil {
+		log.Error(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}
