@@ -155,7 +155,7 @@ func UserLogin(c *fiber.Ctx) error {
 		})
 	}
 
-	user, err := db.GetUser(login.Email)
+	user, err := db.GetUserByEmail(login.Email)
 	if err == sql.ErrNoRows {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,

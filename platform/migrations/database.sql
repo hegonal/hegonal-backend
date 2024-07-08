@@ -49,14 +49,16 @@ CREATE TABLE team_members (
     updated_at timestamp NOT NULL,
     CONSTRAINT TEAM_MEMBERS_PK_1 PRIMARY KEY (member_id, team_id)
 );
--- Table: team_inviteds
-CREATE TABLE team_inviteds (
-    invited_id bigint NOT NULL,
+-- Table: team_invites
+CREATE TABLE team_invites (
+    invite_id bigint NOT NULL,
     team_id bigint NOT NULL,
     user_id bigint NOT NULL,
+    "role" smallint NOT NULL,
     "expiry_date" timestamp,
     created_at timestamp NOT NULL,
-    updated_at timestamp NOT NULL CONSTRAINT team_inviteds_pk PRIMARY KEY ("invited_id")
+    updated_at timestamp NOT NULL,
+    CONSTRAINT team_invites_pk PRIMARY KEY ("invite_id")
 );
 -- Table: http_monitors
 CREATE TABLE http_monitors (
@@ -225,9 +227,9 @@ ADD CONSTRAINT session_fk_user_id FOREIGN KEY (user_id) REFERENCES users(user_id
 ALTER TABLE team_members
 ADD CONSTRAINT team_members_fk_member_id FOREIGN KEY (member_id) REFERENCES users(user_id),
     ADD CONSTRAINT team_members_fk_team_id FOREIGN KEY (team_id) REFERENCES teams(team_id);
-ALTER TABLE team_inviteds
-ADD CONSTRAINT team_inviteds_fk_team_id FOREIGN KEY (team_id) REFERENCES teams(team_id),
-    ADD CONSTRAINT team_inviteds_fk_user_id FOREIGN KEY (server_id) REFERENCES users(user_id);
+ALTER TABLE team_invites
+ADD CONSTRAINT team_invites_fk_team_id FOREIGN KEY (team_id) REFERENCES teams(team_id),
+    ADD CONSTRAINT team_invites_fk_user_id FOREIGN KEY (user_id) REFERENCES users(user_id);
 ALTER TABLE http_monitors
 ADD CONSTRAINT http_monitors_fk_team_id FOREIGN KEY (team_id) REFERENCES teams(team_id),
     ADD CONSTRAINT http_monitors_fk_group FOREIGN KEY ("group") REFERENCES monitor_groups(monitor_group_id),

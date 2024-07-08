@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -64,7 +63,7 @@ func CreateNewNotification(c *fiber.Ctx) error {
 	if createNotification.TeamID != nil {
 		teamMember, err := db.GetTeamMember(userID, *createNotification.TeamID)
 
-		if errors.Is(err, sql.ErrNoRows) {
+		if err == sql.ErrNoRows {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": true,
 				"msg":   "Unauthorized",
@@ -140,7 +139,7 @@ func CreateNewHttpMonitorNotification(c *fiber.Ctx) error {
 
 	teamMember, err := db.GetTeamMember(userID, createHttpMonitorNotification.TeamID)
 
-	if errors.Is(err, sql.ErrNoRows) {
+	if err == sql.ErrNoRows {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,
 			"msg":   "Unauthorized",

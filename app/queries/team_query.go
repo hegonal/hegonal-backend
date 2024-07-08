@@ -43,6 +43,68 @@ func (q *TeamQueries) CreateNewMember(teamMember *models.TeamMember) error {
 	return nil
 }
 
+func (q *TeamQueries) CreateNewTeamInvite(teamMember *models.TeamInvite) error {
+	query := `
+	INSERT INTO team_invites
+	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	`
+
+	_, err := q.Exec(
+		query,
+		teamMember.InviteID, teamMember.TeamID, teamMember.UserID, teamMember.Role, teamMember.ExpiryDate, teamMember.CreatedAt, teamMember.UpdatedAt,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (q *TeamQueries) GetTeamInvite(userID, inviteID string) (models.TeamInvite, error) {
+	var teamInvite models.TeamInvite
+	query := `
+	SELECT *
+	FROM team_invites
+	WHERE invite_id = $1 
+		AND user_id = $2
+	`
+
+	err := q.Get(&teamInvite, query, inviteID, userID)
+	if err != nil {
+		return teamInvite, err
+	}
+	return teamInvite, nil
+}
+
+func (q *TeamQueries) GetTeamInviteByUserIDAndTeamID(teamID, userID string) (models.TeamInvite, error) {
+	var teamInvite models.TeamInvite
+	query := `
+	SELECT *
+	FROM team_invites
+	WHERE team_id = $1 
+		AND user_id = $2
+	`
+
+	err := q.Get(&teamInvite, query, teamID, userID)
+	if err != nil {
+		return teamInvite, err
+	}
+	return teamInvite, nil
+}
+
+func (q *TeamQueries) DeleteTeamInviteByID(inviteID string) error {
+	query := `
+	DELETE FROM team_invites
+	WHERE invite_id = $1
+	`
+
+	_, err := q.Exec(query, inviteID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (q *TeamQueries) GetTeamMember(memberID, teamID string) (models.TeamMember, error) {
 	var teamMember models.TeamMember
 	query := `
@@ -55,10 +117,34 @@ func (q *TeamQueries) GetTeamMember(memberID, teamID string) (models.TeamMember,
 	WHERE member_id = $1
 		AND team_id = $2
 	`
-	
+
 	err := q.DB.Get(&teamMember, query, memberID, teamID)
 	if err != nil {
 		return teamMember, err
 	}
 	return teamMember, nil
+}
+
+func (q *TeamQueries) GetAllTeamMembersWithDetails(teamID string) ([]models.TeamMemberWithDetails, error) {
+    var teamMembers []models.TeamMemberWithDetails
+    query := `
+    SELECT 
+        tm.member_id, 
+        tm.team_id, 
+        tm.role, 
+        u.name, 
+        u.email,
+        u.avatar,
+		tm.created_at,
+		tm.updated_at
+	FROM team_members tm
+    JOIN users u ON tm.member_id = u.user_id
+    WHERE tm.team_id = $1
+    `
+
+    err := q.DB.Select(&teamMembers, query, teamID)
+    if err != nil {
+        return teamMembers, err
+    }
+    return teamMembers, nil
 }

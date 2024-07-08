@@ -7,8 +7,13 @@ import (
 )
 
 func TeamRoutes(a fiber.Router) {
-	authGroup := a.Group("/team")
-	authGroup.Use(middleware.SessionValidationMiddleware)
+	teamGroup := a.Group("/team")
+	teamGroup.Use(middleware.SessionValidationMiddleware)
 
-	authGroup.Post("/add", controllers.CreateNewTeam)
+	teamGroup.Post("/add", controllers.CreateNewTeam)
+	teamGroup.Post("/invite", controllers.NewTeamsInvite)
+
+	teamGroup.Put("/invite/accpet/:inviteID", controllers.AccpetInvite)
+	
+	teamGroup.Get("/members/:teamID", controllers.GetAllTeamMembers)
 }

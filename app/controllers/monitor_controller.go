@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -42,7 +41,7 @@ func CreateNewHttpMonitor(c *fiber.Ctx) error {
 
 	teamMember, err := db.GetTeamMember(userID, createNewHttpMonitor.TeamID)
 
-	if errors.Is(err, sql.ErrNoRows) {
+	if err == sql.ErrNoRows {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": true,
 			"msg":   "Unauthorized",

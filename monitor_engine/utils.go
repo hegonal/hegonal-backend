@@ -18,6 +18,11 @@ func sendNotifications(incident models.Incident,httpMonitor models.HttpMonitor, 
 	for _, notifications := range httpMonitorNotifications {
 		notificationIDArray = append(notificationIDArray, notifications.NotificationID)
 	}
+
+	if len(notificationIDArray) == 0 {
+		return
+	}
+
 	notifications, err:= db.GetAllMatchIDNotifications(notificationIDArray)
 	if err != nil {
 		log.Error(err)

@@ -57,7 +57,7 @@ func (q *UserQueries) CreateNewUser(u *models.User) error {
 	return nil
 }
 
-func (q *UserQueries) GetUser(email string) (models.User, error) {
+func (q *UserQueries) GetUserByEmail(email string) (models.User, error) {
 	var u models.User
 	query := `
 	SELECT *
@@ -65,7 +65,7 @@ func (q *UserQueries) GetUser(email string) (models.User, error) {
 	WHERE email = $1
 	`
 
-	err := q.DB.Get(&u, query, email)
+	err := q.Get(&u, query, email)
 	if err != nil {
 		return u, err
 	}
