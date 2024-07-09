@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -41,6 +42,7 @@ func UserSignUp(c *fiber.Ctx) error {
 	}
 
 	user := &models.User{}
+	signUp.Email = strings.ToLower(signUp.Email)
 
 	emailBeenUsed, err := db.IsEmailUsed(signUp.Email)
 	if err != nil {
@@ -145,6 +147,7 @@ func UserLogin(c *fiber.Ctx) error {
 			"msg":   utils.ValidatorErrors(err),
 		})
 	}
+	login.Email = strings.ToLower(login.Email)
 
 	db, err := database.OpenDBConnection()
 	if err != nil {
@@ -206,7 +209,7 @@ func UserLogin(c *fiber.Ctx) error {
 
 	setSessionCookie(c, user.UserID, session.Session)
 
-	return c.JSON(fiber.Map{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error": false,
 		"msg":   nil,
 		"user":  user,

@@ -60,3 +60,13 @@ type TeamMemberWithDetails struct {
 	CreatedAt time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time      `db:"updated_at" json:"updated_at"`
 }
+
+type UserTeams struct {
+	TeamID      string         `db:"team_id" json:"team_id" validate:"required,max=20"`
+	MemberID    string         `db:"member_id" json:"member_id" validate:"required,max=20"`
+	Name        string         `db:"name" json:"name" validate:"required,max=64"`
+	Description string         `db:"description" json:"description" validate:"max=128"`
+	Role        TeamMemberRole `db:"role" json:"role" validate:"oneof=0 1 2 3"`
+	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
+}

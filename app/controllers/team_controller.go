@@ -304,9 +304,36 @@ func GetAllTeamMembers(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":        false,
 		"msg":          nil,
 		"team_members": teamMembers,
+	})
+}
+func GetAllTeams(c *fiber.Ctx) error {
+	userID := c.Cookies("userID")
+
+	db, ok := c.Locals("db").(*database.Queries)
+	if !ok {
+		log.Error("Failed to retrieve DB from context")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   "Failed to retrieve DB from context",
+		})
+	}
+
+	teamMembers, err := db.GetUserAllTeams(userID)
+	if err != nil {
+		log.Error(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":        false,
+		"msg":          nil,
+		"user_teams": teamMembers,
 	})
 }

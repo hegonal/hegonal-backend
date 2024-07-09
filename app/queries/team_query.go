@@ -148,3 +148,26 @@ func (q *TeamQueries) GetAllTeamMembersWithDetails(teamID string) ([]models.Team
     }
     return teamMembers, nil
 }
+
+func (q *TeamQueries) GetUserAllTeams(userID string) ([]models.UserTeams, error) {
+    var userTeams []models.UserTeams
+    query := `
+    SELECT 
+        tm.team_id, 
+        tm.member_id, 
+        t.name, 
+        t.description, 
+        tm.role, 
+		tm.created_at,
+		tm.updated_at
+	FROM team_members tm
+    JOIN teams t ON t.team_id = tm.team_id
+    WHERE tm.member_id = $1
+    `
+
+    err := q.DB.Select(&userTeams, query, userID)
+    if err != nil {
+        return userTeams, err
+    }
+    return userTeams, nil
+}

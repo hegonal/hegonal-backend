@@ -16,4 +16,5 @@ func TeamRoutes(a fiber.Router) {
 	teamGroup.Put("/invite/accpet/:inviteID", controllers.AccpetInvite)
 	
 	teamGroup.Get("/members/:teamID", controllers.GetAllTeamMembers)
+	teamGroup.Get("/teams", controllers.GetAllTeams)
 }

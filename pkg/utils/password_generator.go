@@ -9,7 +9,7 @@ func NormalizePassword(p string) []byte {
 func GeneratePassword(p string) string {
 	bytePwd := NormalizePassword(p)
 
-	hash, err := bcrypt.GenerateFromPassword(bytePwd, bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword(bytePwd, 12)
 	if err != nil {
 		return err.Error()
 	}
